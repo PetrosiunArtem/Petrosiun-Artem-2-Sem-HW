@@ -5,10 +5,8 @@ import org.example.app.entity.File;
 import org.example.app.exception.FileMemoryOverflowException;
 import org.example.app.exception.FileNotFoundException;
 
-import java.io.IOException;
-import java.io.InputStream;
-
 import java.net.URL;
+import java.util.List;
 
 import org.example.app.repository.FilesRepositoryImpl;
 import org.springframework.stereotype.Service;
@@ -27,9 +25,19 @@ public class FilesService {
         return filesRepository.downloadFile(currentUrl, fileId, userId);
     }
 
-    public String uploadFile(String bucketName, InputStream file) throws IOException, FileMemoryOverflowException {
+    public void uploadFile(File file) throws FileMemoryOverflowException {
         log.info("Функция по загрузке файла вызвана в сервисе");
-        return filesRepository.uploadFile(bucketName, file);
+        filesRepository.uploadFile(file);
+    }
+
+    public List<String> getAllFiles() {
+        log.info("Функция по показу всех файлов вызвана в сервисе");
+        return filesRepository.getAllFiles();
+    }
+
+    public File getFile(String fileId) throws FileNotFoundException {
+        log.info("Функция по взятию файла вызвана в сервисе");
+        return filesRepository.getFile(fileId);
     }
 
     public void putFile(String fileId, File newFile) throws FileNotFoundException {

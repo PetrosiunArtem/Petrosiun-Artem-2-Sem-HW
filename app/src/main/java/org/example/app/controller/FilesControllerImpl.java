@@ -1,9 +1,8 @@
 package org.example.app.controller;
 
-import java.io.IOException;
-import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.List;
 
 import lombok.extern.slf4j.Slf4j;
 import org.example.app.entity.File;
@@ -21,8 +20,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.annotation.PutMapping;
 
-import org.springframework.web.multipart.MultipartFile;
-
 @RestController
 @Slf4j
 public class FilesControllerImpl implements FilesController {
@@ -35,21 +32,29 @@ public class FilesControllerImpl implements FilesController {
     @Override
     @GetMapping("/files/info/download/{fileId}/{userId}")
     public ResponseEntity<String> downloadFile(@PathVariable("fileId") String fileId, @PathVariable("userId") String userId) throws MalformedURLException {
-        URL currentURL = new URL("https://localhost:4567/files/info/download/" + fileId + "/" + userId);
+        URL currentURL = new URL("https://localhost:8080/second-memory/files/info/download/" + fileId + "/" + userId);
         return ResponseEntity.ok(filesService.downloadFile(currentURL, fileId, userId));
     }
 
     @Override
-    @PostMapping("/files/upload/{bucketName}")
-    public ResponseEntity<String> postUploadPage(@PathVariable("bucketName") String bucketName, MultipartFile multipartFile) throws IOException, FileMemoryOverflowException {
-        InputStream file = multipartFile.getInputStream();
-        return ResponseEntity.ok(filesService.uploadFile(bucketName, file));
+    @PostMapping("/files/upload")
+    public ResponseEntity<File> postUploadPage(@RequestBody File file) throws FileMemoryOverflowException {
+        filesService.uploadFile(file);
+        log.info("File uploaded successfully");
+        return ResponseEntity.status(201).body(file);
     }
 
     @Override
-    @GetMapping("/files/upload/{bucketName}")
-    public ResponseEntity<String> getUploadPage(@PathVariable String bucketName) {
-        return ResponseEntity.ok("Uploading in progress");
+    @GetMapping("/files/get/{fileId}")
+    public ResponseEntity<File> getFile(@PathVariable("fileId") String fileId) throws FileNotFoundException {
+        File file = filesService.getFile(fileId);
+        return ResponseEntity.ok(file);
+    }
+
+    @Override
+    @GetMapping("/files")
+    public ResponseEntity<List<String>> getAllFiles() {
+        return ResponseEntity.ok(filesService.getAllFiles());
     }
 
     @Override

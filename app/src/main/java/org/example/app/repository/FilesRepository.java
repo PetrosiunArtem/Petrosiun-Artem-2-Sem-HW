@@ -4,15 +4,18 @@ import org.example.app.entity.File;
 import org.example.app.exception.FileMemoryOverflowException;
 import org.example.app.exception.FileNotFoundException;
 
-import java.io.IOException;
-import java.io.InputStream;
 import java.net.URL;
+import java.util.List;
 
 public interface FilesRepository {
 
     String downloadFile(URL currentUrl, String bucketName, String fileName);
 
-    String uploadFile(String bucketName, InputStream file) throws FileMemoryOverflowException, IOException;
+    void uploadFile(File file) throws FileMemoryOverflowException;
+
+    File getFile(String fileId) throws FileNotFoundException;
+
+    List<String> getAllFiles();
 
     void putFile(String fileId, File newFile) throws FileNotFoundException;
 

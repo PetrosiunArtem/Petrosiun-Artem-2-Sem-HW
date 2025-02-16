@@ -1,6 +1,5 @@
 package org.example.app.repository;
 
-import java.io.IOException;
 import java.net.URL;
 
 import lombok.extern.slf4j.Slf4j;
@@ -9,8 +8,9 @@ import org.example.app.exception.FileMemoryOverflowException;
 import org.example.app.exception.FileNotFoundException;
 import org.springframework.stereotype.Repository;
 
-import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 
 @Repository
 @Slf4j
@@ -26,12 +26,26 @@ public class FilesRepositoryImpl implements FilesRepository {
 
 
     @Override
-    public String uploadFile(String bucketName, InputStream file) throws FileMemoryOverflowException, IOException {
+    public void uploadFile(File file) throws FileMemoryOverflowException {
         log.info("Функция по загрузке файла вызвана в репозитории");
-        if (file.available() > CAPACITY) {
+        if (file.capacity() > CAPACITY) {
             throw new FileMemoryOverflowException();
         }
-        return "Файл успешно загружен";
+        files.put(Integer.toString(files.size()), file);
+    }
+
+    @Override
+    public File getFile(String fileId) throws FileNotFoundException {
+        log.info("Функция по взятию файла вызвана в репозитории");
+        if (!files.containsKey(fileId)) {
+            throw new FileNotFoundException("No such file exists");
+        }
+        return files.get(fileId);
+    }
+
+    @Override
+    public List<String> getAllFiles() {
+        return new ArrayList<>(files.keySet());
     }
 
     @Override
@@ -40,7 +54,7 @@ public class FilesRepositoryImpl implements FilesRepository {
         if (!files.containsKey(fileId)) {
             throw new FileNotFoundException("No such file exists");
         }
-        files.put(fileId, newFile);
+        files.replace(fileId, newFile);
     }
 
     @Override
@@ -58,6 +72,6 @@ public class FilesRepositoryImpl implements FilesRepository {
         if (!files.containsKey(fileId)) {
             throw new FileNotFoundException("No such file exists");
         }
-        files.put(fileId, newFile);
+        files.replace(fileId, newFile);
     }
 }
