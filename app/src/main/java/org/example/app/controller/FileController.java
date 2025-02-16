@@ -21,7 +21,7 @@ import java.util.List;
 
 @RequestMapping("/second-memory")
 @Tag(name = "File API", description = "Управление пользователями")
-public interface FilesController {
+public interface FileController {
 
     @Operation(summary = "Скачать файл из репозитория")
     @ApiResponses(value = {

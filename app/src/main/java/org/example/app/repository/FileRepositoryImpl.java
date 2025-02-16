@@ -14,7 +14,7 @@ import java.util.List;
 
 @Repository
 @Slf4j
-public class FilesRepositoryImpl implements FilesRepository {
+public class FileRepositoryImpl implements FileRepository {
     private static final HashMap<String, File> files = new HashMap<>();
     private static final int CAPACITY = 10 * 1024 * 1024;
 

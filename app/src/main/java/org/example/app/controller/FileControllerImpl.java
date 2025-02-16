@@ -8,7 +8,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.example.app.entity.File;
 import org.example.app.exception.FileMemoryOverflowException;
 import org.example.app.exception.FileNotFoundException;
-import org.example.app.service.FilesService;
+import org.example.app.service.FileService;
 import org.springframework.http.ResponseEntity;
 
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -22,10 +22,10 @@ import org.springframework.web.bind.annotation.PutMapping;
 
 @RestController
 @Slf4j
-public class FilesControllerImpl implements FilesController {
-    private final FilesService filesService;
+public class FileControllerImpl implements FileController {
+    private final FileService filesService;
 
-    public FilesControllerImpl(FilesService filesService) {
+    public FileControllerImpl(FileService filesService) {
         this.filesService = filesService;
     }
 

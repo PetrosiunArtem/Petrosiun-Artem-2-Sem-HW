@@ -7,7 +7,7 @@ import org.example.app.exception.FileNotFoundException;
 import java.net.URL;
 import java.util.List;
 
-public interface FilesRepository {
+public interface FileRepository {
 
     String downloadFile(URL currentUrl, String bucketName, String fileName);
 
