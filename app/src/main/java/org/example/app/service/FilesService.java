@@ -1,5 +1,6 @@
 package org.example.app.service;
 
+import lombok.extern.slf4j.Slf4j;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -7,15 +8,15 @@ import java.io.InputStream;
 
 import java.net.URL;
 
-import org.example.app.repository.FilesRepository;
+import org.example.app.repository.FilesRepositoryImpl;
 import org.springframework.stereotype.Service;
 
 @Service
+@Slf4j
 public class FilesService {
-    private final FilesRepository filesRepository;
-    private static final Logger log = LoggerFactory.getLogger(FilesService.class);
+    private final FilesRepositoryImpl filesRepository;
 
-    public FilesService(FilesRepository filesRepository) {
+    public FilesService(FilesRepositoryImpl filesRepository) {
         this.filesRepository = filesRepository;
     }
 

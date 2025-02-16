@@ -1,25 +1,11 @@
 package org.example.app.repository;
 
+import java.io.InputStream;
 import java.net.URL;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.stereotype.Repository;
+public interface FilesRepository {
 
-import java.io.InputStream;
+    String download(URL currentUrl, String bucketName, String fileName);
 
-@Repository
-public class FilesRepository {
-
-    private static final Logger log = LoggerFactory.getLogger(FilesRepository.class);
-
-    public String download(URL currentUrl, String bucketName, String fileName) {
-        log.info("Функция по скачиванию файла вызвана в репозитории");
-        return "Файл успешно скачан";
-    }
-
-    public String upload(String bucketName, InputStream file) {
-        log.info("Функция по загрузке файла вызвана в репозитории");
-        return "Файл успешно загружен";
-    }
+    String upload(String bucketName, InputStream file);
 }

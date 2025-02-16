@@ -1,42 +1,58 @@
 package org.example.app.controller;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.tags.Tag;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.MalformedURLException;
-import java.net.URL;
+import org.example.app.exception.FileMemoryOverflowException;
+import org.example.app.exception.FileNotFoundException;
 
-import org.example.app.service.FilesService;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.multipart.MultipartFile;
 
-@Controller
-public class FilesController {
-    private final FilesService filesService;
+import java.io.IOException;
+import java.net.MalformedURLException;
 
-    public FilesController(FilesService filesService) {
-        this.filesService = filesService;
-    }
 
-    @GetMapping("/files/info/download/{fileId}/{userId}")
-    private ResponseEntity<String> download(@PathVariable("fileId") String fileId, @PathVariable("userId") String userId) throws MalformedURLException {
-        URL currentURL = new URL("https://localhost:4567/files/info/download/" + fileId + "/" + userId);
-        return ResponseEntity.ok(filesService.download(currentURL, fileId, userId));
-    }
+@RequestMapping("/second-memory")
+@Tag(name = "File API", description = "Управление пользователями")
+public interface FilesController {
 
-    @PostMapping("/files/upload/{bucketName}")
-    private ResponseEntity<String> postUploadPage(@PathVariable("bucketName") String bucketName, MultipartFile multipartFile) throws IOException {
-        InputStream file = multipartFile.getInputStream();
-        return ResponseEntity.ok(filesService.upload(bucketName, file));
-    }
+    @Operation(summary = "Скачать файл из репозитория")
+    @ApiResponse(
+            responseCode = "200",
+            description = "Файл скачен",
+            content = @Content
+    )
+    @ApiResponse(
+            responseCode = "404",
+            description = "NOT_FOUND | Файл с такими данными не найден",
+            content = @Content
+    )
+    public ResponseEntity<String> download(@PathVariable String fileId, @PathVariable String userId) throws MalformedURLException, FileNotFoundException;
 
-    @GetMapping("/files/upload/{bucketName}")
-    private ResponseEntity<String> getUploadPage(@PathVariable String bucketName) {
-        return new ResponseEntity<>("Uploading in progress", HttpStatus.OK);
-    }
+    @Operation(summary = "Загрузить файл в репозиторий")
+    @ApiResponse(
+            responseCode = "200",
+            description = "Файл загружен",
+            content = @Content
+    )
+    @ApiResponse(
+            responseCode = "400",
+            description = "MEMORY_OVERFLOW | Файл превышает допустимый лимит по памяти",
+            content = @Content
+    )
+    public ResponseEntity<String> postUploadPage(@PathVariable String bucketName, MultipartFile multipartFile) throws IOException, FileMemoryOverflowException;
+
+
+    @Operation(summary = "Отобразить страницу по загрузке файла")
+    @ApiResponse(
+            responseCode = "200",
+            description = "Страница отобразилась",
+            content = @Content
+    )
+    public ResponseEntity<String> getUploadPage(@PathVariable String bucketName);
 }
