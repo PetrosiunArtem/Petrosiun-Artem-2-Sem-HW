@@ -1,9 +1,11 @@
 package org.example.app.service;
 
 import lombok.extern.slf4j.Slf4j;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.example.app.entity.File;
+import org.example.app.exception.FileMemoryOverflowException;
+import org.example.app.exception.FileNotFoundException;
 
+import java.io.IOException;
 import java.io.InputStream;
 
 import java.net.URL;
@@ -20,13 +22,28 @@ public class FilesService {
         this.filesRepository = filesRepository;
     }
 
-    public String download(URL currentUrl, String file_id, String userId) {
+    public String downloadFile(URL currentUrl, String fileId, String userId) {
         log.info("Функция по скачиванию файла вызвана в сервисе");
-        return filesRepository.download(currentUrl, file_id, userId);
+        return filesRepository.downloadFile(currentUrl, fileId, userId);
     }
 
-    public String upload(String bucketName, InputStream file) {
+    public String uploadFile(String bucketName, InputStream file) throws IOException, FileMemoryOverflowException {
         log.info("Функция по загрузке файла вызвана в сервисе");
-        return filesRepository.upload(bucketName, file);
+        return filesRepository.uploadFile(bucketName, file);
+    }
+
+    public void putFile(String fileId, File newFile) throws FileNotFoundException {
+        log.info("Функция по замене файла на новый вызвана в сервисе");
+        filesRepository.putFile(fileId, newFile);
+    }
+
+    public File deleteFile(String fileId) throws FileNotFoundException {
+        log.info("Функция по удалению файла вызвана в репозитории");
+        return filesRepository.deleteFile(fileId);
+    }
+
+    public void patchFile(String fileId, File newFile) throws FileNotFoundException {
+        log.info("Функция по изменению файла вызвана в репозитории");
+        filesRepository.patchFile(fileId, newFile);
     }
 }
