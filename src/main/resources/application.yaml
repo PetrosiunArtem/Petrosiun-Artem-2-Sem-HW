@@ -1,7 +1,18 @@
 spring:
   application:
     name: app
+  security:
+    user:
+      name: admin
+      password: changeMe
 springdoc:
   swagger-ui:
     path: /swagger-ui.html
     enabled: true
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "*"
+        exclude: shutdown
+      base-path: /admin/actuator

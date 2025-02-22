@@ -4,11 +4,12 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.List;
 
+import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.example.app.entity.File;
 import org.example.app.exception.FileMemoryOverflowException;
 import org.example.app.exception.FileNotFoundException;
-import org.example.app.service.FileService;
+import org.example.app.service.FilesService;
 import org.springframework.http.ResponseEntity;
 
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -16,16 +17,15 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.annotation.PutMapping;
 
 @RestController
 @Slf4j
-public class FileControllerImpl implements FileController {
-    private final FileService filesService;
+public class FilesControllerImpl implements FilesController {
+    private final FilesService filesService;
 
-    public FileControllerImpl(FileService filesService) {
+    public FilesControllerImpl(FilesService filesService) {
         this.filesService = filesService;
     }
 
@@ -38,7 +38,7 @@ public class FileControllerImpl implements FileController {
 
     @Override
     @PostMapping("/files/upload")
-    public ResponseEntity<File> postUploadPage(@RequestBody File file) throws FileMemoryOverflowException {
+    public ResponseEntity<File> postUploadPage(File file) throws FileMemoryOverflowException {
         filesService.uploadFile(file);
         log.info("File uploaded successfully");
         return ResponseEntity.status(201).body(file);
@@ -66,14 +66,14 @@ public class FileControllerImpl implements FileController {
 
     @Override
     @PutMapping("/files/put/{fileId}")
-    public ResponseEntity<File> putFile(@PathVariable("fileId") String fileId, @RequestBody File newFile) throws FileNotFoundException {
+    public ResponseEntity<File> putFile(@PathVariable("fileId") String fileId, File newFile) throws FileNotFoundException {
         filesService.putFile(fileId, newFile);
         return ResponseEntity.ok(newFile);
     }
 
     @Override
     @PatchMapping("/files/patch/{fileId}")
-    public ResponseEntity<File> patchFile(@PathVariable("fileId") String fileId, @RequestBody File newFile) throws FileNotFoundException {
+    public ResponseEntity<File> patchFile(@PathVariable("fileId") String fileId, File newFile) throws FileNotFoundException {
         filesService.patchFile(fileId, newFile);
         return ResponseEntity.ok(newFile);
     }

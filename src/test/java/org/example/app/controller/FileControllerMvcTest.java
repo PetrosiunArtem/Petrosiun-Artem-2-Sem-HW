@@ -6,14 +6,17 @@ import static org.mockito.Mockito.doThrow;
 import java.util.ArrayList;
 import java.util.Arrays;
 
+import org.example.app.AppApplication;
 import org.example.app.entity.File;
 import org.example.app.exception.FileMemoryOverflowException;
 import org.example.app.exception.FileNotFoundException;
-import org.example.app.service.FileService;
+import org.example.app.security.SecurityConfig;
+import org.example.app.service.FilesService;
 import org.junit.jupiter.api.Test;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -27,13 +30,14 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 
-@WebMvcTest(FileController.class)
+@WebMvcTest(FilesController.class)
+@ContextConfiguration(classes = {AppApplication.class, SecurityConfig.class})
 class FileControllerMvcTest {
     @Autowired
     private MockMvc mockMvc;
 
     @MockitoBean
-    private FileService fileService;
+    private FilesService fileService;
 
     private static final File MOCK_FILE = new File("Test file.txt", 1024);
     private static final String FILE_JSON = "{ \"fileName\": \"Test file.txt\",\"capacity\": 1024}";
@@ -41,6 +45,7 @@ class FileControllerMvcTest {
 
 
     @Test
+
     public void shouldSuccessfullyFindFile() throws Exception {
         when(fileService.getFile(any(String.class))).thenReturn(MOCK_FILE);
         mockMvc

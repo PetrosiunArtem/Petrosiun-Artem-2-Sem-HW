@@ -8,15 +8,15 @@ import org.example.app.exception.FileNotFoundException;
 import java.net.URL;
 import java.util.List;
 
-import org.example.app.repository.FileRepositoryImpl;
+import org.example.app.repository.FilesRepositoryImpl;
 import org.springframework.stereotype.Service;
 
 @Service
 @Slf4j
-public class FileService {
-    private final FileRepositoryImpl filesRepository;
+public class FilesService {
+    private final FilesRepositoryImpl filesRepository;
 
-    public FileService(FileRepositoryImpl filesRepository) {
+    public FilesService(FilesRepositoryImpl filesRepository) {
         this.filesRepository = filesRepository;
     }
 
