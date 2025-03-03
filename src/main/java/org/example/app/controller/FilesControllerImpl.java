@@ -4,13 +4,14 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.List;
 
+import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
 import lombok.extern.slf4j.Slf4j;
 import org.example.app.entity.File;
 import org.example.app.exception.FileMemoryOverflowException;
 import org.example.app.exception.FileNotFoundException;
 import org.example.app.service.FilesServiceImpl;
 import org.springframework.http.ResponseEntity;
-
+import io.github.resilience4j.ratelimiter.annotation.RateLimiter;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -21,6 +22,9 @@ import org.springframework.web.bind.annotation.PutMapping;
 
 @RestController
 @Slf4j
+@RateLimiter(name = "rateLimiterAPI")
+@CircuitBreaker(name = "CircuitBreakerAPI")
+
 public class FilesControllerImpl implements FilesController {
     private final FilesServiceImpl filesService;
 

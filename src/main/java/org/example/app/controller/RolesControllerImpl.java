@@ -1,5 +1,6 @@
 package org.example.app.controller;
 
+import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
 import lombok.extern.slf4j.Slf4j;
 import org.example.app.entity.Role;
 import org.example.app.exception.DatabaseException;
@@ -14,6 +15,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @Slf4j
+@CircuitBreaker(name = "CircuitBreakerAPI")
 public class RolesControllerImpl implements RolesController {
     private final RolesServiceImpl rolesService;
 

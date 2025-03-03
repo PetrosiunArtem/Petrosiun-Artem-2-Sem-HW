@@ -22,3 +22,17 @@ server:
     threads:
       max: 210
       min-spare: 10
+resilience4j.ratelimiter:
+  instances:
+    rateLimiterAPI:
+      limitForPeriod: 10
+      limitRefreshPeriod: 10s
+      timeoutDuration: 0
+resilience4j.circuitbreaker:
+  instances:
+    CircuitBreakerAPI:
+      failureRateThreshold: 50
+      waitDurationInOpenState: 10s
+      permittedNumberOfCallsInHalfOpenState: 3
+      slidingWindowType: count_based
+      slidingWindowSize: 10

@@ -73,7 +73,7 @@ public class FilesServiceImpl implements FilesService {
             key = "{#fileId}")
     @Override
     public File deleteFile(String fileId) throws FileNotFoundException {
-        log.info("Функция по удалению файла вызвана в репозитории");
+        log.info("Функция по удалению файла вызвана в сервисе");
         return filesRepository.deleteFile(fileId);
     }
 
@@ -82,7 +82,7 @@ public class FilesServiceImpl implements FilesService {
             key = "{#fileId}")
     @Override
     public void patchFile(String fileId, File newFile) throws FileNotFoundException {
-        log.info("Функция по изменению файла вызвана в репозитории");
+        log.info("Функция по изменению файла вызвана в сервисе");
         filesRepository.patchFile(fileId, newFile);
     }
 }
