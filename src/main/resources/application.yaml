@@ -16,3 +16,9 @@ management:
         include: "*"
         exclude: shutdown
       base-path: /admin/actuator
+server:
+  port: 8080
+  tomcat:
+    threads:
+      max: 210
+      min-spare: 10

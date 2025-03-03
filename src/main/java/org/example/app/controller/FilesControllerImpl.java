@@ -4,12 +4,11 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.List;
 
-import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.example.app.entity.File;
 import org.example.app.exception.FileMemoryOverflowException;
 import org.example.app.exception.FileNotFoundException;
-import org.example.app.service.FilesService;
+import org.example.app.service.FilesServiceImpl;
 import org.springframework.http.ResponseEntity;
 
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -23,9 +22,9 @@ import org.springframework.web.bind.annotation.PutMapping;
 @RestController
 @Slf4j
 public class FilesControllerImpl implements FilesController {
-    private final FilesService filesService;
+    private final FilesServiceImpl filesService;
 
-    public FilesControllerImpl(FilesService filesService) {
+    public FilesControllerImpl(FilesServiceImpl filesService) {
         this.filesService = filesService;
     }
 
