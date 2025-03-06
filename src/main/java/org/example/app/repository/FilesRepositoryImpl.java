@@ -32,7 +32,7 @@ public class FilesRepositoryImpl implements FilesRepository {
     @Override
     public void uploadFile(File file) throws FileMemoryOverflowException {
         log.info("Функция по загрузке файла вызвана в репозитории");
-        if (file.capacity() > CAPACITY) {
+        if (file.getCapacity() > CAPACITY) {
             throw new FileMemoryOverflowException();
         }
         files.put(Integer.toString(files.size()), file);

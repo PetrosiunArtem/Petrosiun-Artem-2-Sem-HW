@@ -40,8 +40,8 @@ class FileControllerMvcTest {
     private FilesServiceImpl fileService;
 
     private static final File MOCK_FILE = new File("Test file.txt", 1024);
-    private static final String FILE_JSON = "{ \"fileName\": \"Test file.txt\",\"capacity\": 1024}";
-    private static final String BIG_FILE_JSON = "{ \"fileName\": \"Test file.txt\",\"capacity\": 1_000_000_000}";
+    private static final String FILE_JSON = "{ \"name\": \"Test file.txt\",\"capacity\": 1024}";
+    private static final String BIG_FILE_JSON = "{ \"name\": \"Test file.txt\",\"capacity\": 1_000_000_000}";
 
 
     @Test
@@ -51,7 +51,7 @@ class FileControllerMvcTest {
         mockMvc
                 .perform(get("/second-memory/files/get/1"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.fileName").value("Test file.txt"))
+                .andExpect(jsonPath("$.name").value("Test file.txt"))
                 .andExpect(jsonPath("$.capacity").value(1024));
     }
 
@@ -74,7 +74,7 @@ class FileControllerMvcTest {
         mockMvc
                 .perform(post("/second-memory/files/upload").contentType("application/json").content(FILE_JSON))
                 .andExpect(status().isCreated())
-                .andExpect(jsonPath("$.fileName").value("Test file.txt"))
+                .andExpect(jsonPath("$.name").value("Test file.txt"))
                 .andExpect(jsonPath("$.capacity").value(1024));
     }
 
@@ -94,7 +94,7 @@ class FileControllerMvcTest {
         mockMvc
                 .perform(patch("/second-memory/files/patch/1").contentType("application/json").content(FILE_JSON))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.fileName").value("Test file.txt"))
+                .andExpect(jsonPath("$.name").value("Test file.txt"))
                 .andExpect(jsonPath("$.capacity").value(1024));
     }
 
@@ -112,7 +112,7 @@ class FileControllerMvcTest {
         mockMvc
                 .perform(delete("/second-memory/files/delete/12"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.fileName").value("Test file.txt"))
+                .andExpect(jsonPath("$.name").value("Test file.txt"))
                 .andExpect(jsonPath("$.capacity").value(1024));
     }
 

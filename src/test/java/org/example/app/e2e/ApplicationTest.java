@@ -4,6 +4,7 @@ package org.example.app.e2e;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.util.List;
+import java.util.Objects;
 
 import lombok.extern.slf4j.Slf4j;
 import org.example.app.AppApplication;
@@ -24,7 +25,7 @@ import org.springframework.test.context.DynamicPropertySource;
 import org.testcontainers.containers.PostgreSQLContainer;
 
 @ContextConfiguration(classes = {AppApplication.class, SecurityConfig.class})
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT, properties = {"spring.flyway.enabled=false" })
 @Slf4j
 public class ApplicationTest {
 
@@ -35,7 +36,7 @@ public class ApplicationTest {
     private TestRestTemplate restTemplate;
 
     static PostgreSQLContainer<?> postgresContainer =
-            new PostgreSQLContainer<>("postgres:13")
+            new PostgreSQLContainer<>("postgres:17")
                     .withInitScript("db-init-script.sql")
                     .withDatabaseName("test database")
                     .withUsername("My user")
@@ -68,17 +69,21 @@ public class ApplicationTest {
                 restTemplate.postForEntity(
                         "http://localhost:" + port + "/second-memory/files/upload", mockFile2, File.class);
         assertEquals(HttpStatus.CREATED, uploadResponse1.getStatusCode());
-        assertEquals(mockFile1, uploadResponse1.getBody());
+        assertEquals(mockFile1.getName(), Objects.requireNonNull(uploadResponse1.getBody()). getName());
+        assertEquals(mockFile1.getCapacity(), uploadResponse1.getBody().getCapacity());
         assertEquals(HttpStatus.CREATED, uploadResponse2.getStatusCode());
-        assertEquals(mockFile2, uploadResponse2.getBody());
+        assertEquals(mockFile2.getName(), Objects.requireNonNull(uploadResponse2.getBody()).getName());
+        assertEquals(mockFile2.getCapacity(), uploadResponse2.getBody().getCapacity());
 
         // Step 2: Update file
-        File updatedMockUser = new File("minecraft.exe", mockFile1.capacity());
+        File updatedMockUser = new File("minecraft.exe", mockFile1.getCapacity());
         File updateResponse =
                 restTemplate.patchForObject(
                         "http://localhost:" + port + "/second-memory/files/patch/1", updatedMockUser, File.class);
 
-        assertEquals(updatedMockUser, updateResponse);
+        //assertEquals(updatedMockUser, updateResponse);
+        assertEquals(updatedMockUser.getName(), Objects.requireNonNull(updateResponse.getName()));
+        assertEquals(updatedMockUser.getCapacity(), updateResponse.getCapacity());
 
         // Step 3: Get file
         ResponseEntity<File> getUserResponse =
@@ -86,8 +91,9 @@ public class ApplicationTest {
                         "http://localhost:" + port + "/second-memory/files/get/1", File.class);
 
         assertEquals(HttpStatus.OK, getUserResponse.getStatusCode());
-        assertEquals(updatedMockUser, getUserResponse.getBody());
-
+//        assertEquals(updatedMockUser, getUserResponse.getBody());
+        assertEquals(updatedMockUser.getName(), Objects.requireNonNull(getUserResponse.getBody()).getName());
+        assertEquals(updatedMockUser.getCapacity(), getUserResponse.getBody().getCapacity());
         // Step 4: Get all files
         List<String> fileArrayResponse =
                 restTemplate.getForObject("http://localhost:" + port + "/second-memory/files", List.class);
@@ -104,6 +110,9 @@ public class ApplicationTest {
                         File.class);
 
         assertEquals(HttpStatus.OK, deleteResponse.getStatusCode());
-        assertEquals(updatedMockUser, deleteResponse.getBody());
+//        assertEquals(updatedMockUser, deleteResponse.getBody());
+        assertEquals(updatedMockUser.getName(), Objects.requireNonNull(deleteResponse.getBody()).getName());
+        assertEquals(updatedMockUser.getCapacity(), deleteResponse.getBody().getCapacity());
+
     }
 }

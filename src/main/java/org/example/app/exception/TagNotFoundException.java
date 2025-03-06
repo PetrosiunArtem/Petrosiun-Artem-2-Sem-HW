@@ -3,5 +3,5 @@ package org.example.app.exception;
 import lombok.experimental.StandardException;
 
 @StandardException
-public class RoleNotFoundException extends Exception {
+public class TagNotFoundException extends Exception {
 }

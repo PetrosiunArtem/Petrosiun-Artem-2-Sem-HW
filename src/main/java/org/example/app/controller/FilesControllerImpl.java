@@ -24,7 +24,6 @@ import org.springframework.web.bind.annotation.PutMapping;
 @Slf4j
 @RateLimiter(name = "rateLimiterAPI")
 @CircuitBreaker(name = "CircuitBreakerAPI")
-
 public class FilesControllerImpl implements FilesController {
     private final FilesServiceImpl filesService;
 

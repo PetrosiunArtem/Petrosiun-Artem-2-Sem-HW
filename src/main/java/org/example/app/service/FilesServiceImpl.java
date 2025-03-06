@@ -1,5 +1,6 @@
 package org.example.app.service;
 
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.example.app.entity.File;
 import org.example.app.exception.FileMemoryOverflowException;
@@ -16,15 +17,12 @@ import org.springframework.stereotype.Service;
 
 @Service
 @Slf4j
+@RequiredArgsConstructor
 public class FilesServiceImpl implements FilesService {
     private final FilesRepositoryImpl filesRepository;
 
     // Потокобезопасен
     private final Set<String> processedFiles = ConcurrentHashMap.newKeySet();
-
-    public FilesServiceImpl(FilesRepositoryImpl filesRepository) {
-        this.filesRepository = filesRepository;
-    }
 
     @Override
     public String downloadFile(URL currentUrl, String fileId, String userId) {
@@ -36,8 +34,8 @@ public class FilesServiceImpl implements FilesService {
     @Override
     public void uploadFile(File file) throws FileMemoryOverflowException {
         log.info("Функция по загрузке файла вызвана в сервисе");
-        if (!processedFiles.add(file.fileName())) {
-            log.info("File {} already being uploaded", file.fileName());
+        if (!processedFiles.add(file.getName())) {
+            log.info("File {} already being uploaded", file.getName());
             return;
         }
         filesRepository.uploadFile(file);
