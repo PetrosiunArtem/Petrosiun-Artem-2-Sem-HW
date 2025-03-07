@@ -5,6 +5,8 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
+import java.net.MalformedURLException;
+
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
@@ -17,9 +19,9 @@ class LoggingAspectTest {
     private LoggingAspect loggingAspect;
 
     @Test
-    void shouldIncreaseClassFieldByTwo() {
+    void shouldIncreaseClassFieldByTwo() throws MalformedURLException {
         int count = loggingAspect.getExecutionCount();
-        filesController.getAllFiles();
+        filesController.downloadFile(1L, 2L);
         assertEquals(count + 2, loggingAspect.getExecutionCount());
     }
 }
