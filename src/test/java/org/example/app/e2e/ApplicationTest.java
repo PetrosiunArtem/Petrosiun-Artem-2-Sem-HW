@@ -20,6 +20,7 @@ import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.example.app.entity.File;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
@@ -30,6 +31,7 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT, properties = {"spring.flyway.enabled=false" })
 @Slf4j
 @Testcontainers
+@ActiveProfiles("test")
 public class ApplicationTest {
 
     @LocalServerPort
