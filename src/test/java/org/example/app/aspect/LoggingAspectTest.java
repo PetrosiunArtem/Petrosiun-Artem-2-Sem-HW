@@ -18,7 +18,8 @@ class LoggingAspectTest {
 
     @Test
     void shouldIncreaseClassFieldByTwo() {
+        int count = loggingAspect.getExecutionCount();
         filesController.getAllFiles();
-        assertEquals(2, loggingAspect.getExecutionCount());
+        assertEquals(count + 2, loggingAspect.getExecutionCount());
     }
 }
