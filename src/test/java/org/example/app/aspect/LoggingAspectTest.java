@@ -2,6 +2,7 @@ package org.example.app.aspect;
 
 import org.example.app.AppApplication;
 import org.example.app.controller.FilesController;
+import org.example.app.controller.FilesControllerImpl;
 import org.example.app.security.SecurityConfig;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,7 +18,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 class LoggingAspectTest {
 
     @Autowired
-    private FilesController filesController;
+    private FilesControllerImpl filesController;
 
     @Autowired
     private LoggingAspect loggingAspect;
