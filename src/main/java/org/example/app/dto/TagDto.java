@@ -1,18 +1,20 @@
 package org.example.app.dto;
 
+import jakarta.persistence.metamodel.StaticMetamodel;
 import lombok.Getter;
-import org.example.app.entity.File;
+import org.springframework.context.annotation.Bean;
 
-import java.util.Set;
+import java.io.Serializable;
 
-@Getter
-public class TagDto {
-    private Long id;
-    private String name;
-    private Set<File> files;
 
-    public TagDto(Long id, String name) {
-        this.id = id;
-        this.name = name;
-    }
+//@Getter
+
+public record TagDto(Long id, String name) {
+//    private Long id;
+//    private String name;
+//
+//    public TagDto(Long id, String name) {
+//        this.id = id;
+//        this.name = name;
+//    }
 }

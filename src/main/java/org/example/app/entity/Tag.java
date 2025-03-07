@@ -36,8 +36,7 @@ public class Tag {
     protected Tag() {
     }
 
-    public Tag(String name, Set<File> files) {
+    public Tag(String name) {
         this.name = name;
-        this.files.addAll(files);
     }
 }
