@@ -1,6 +1,7 @@
 package org.example.app.aspect;
 
 import org.example.app.AppApplication;
+import org.example.app.config.DatabaseConfig;
 import org.example.app.controller.FilesController;
 import org.example.app.controller.FilesControllerImpl;
 import org.example.app.security.SecurityConfig;
@@ -19,7 +20,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @Testcontainers
 @ActiveProfiles("test")
-class LoggingAspectTest {
+class LoggingAspectTest extends DatabaseConfig {
 
     @Autowired
     private FilesControllerImpl filesController;

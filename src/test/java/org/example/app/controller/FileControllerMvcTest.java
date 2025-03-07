@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 
 import org.example.app.AppApplication;
+import org.example.app.config.DatabaseConfig;
 import org.example.app.dto.FileDto;
 import org.example.app.entity.File;
 import org.example.app.exception.FileMemoryOverflowException;
@@ -37,7 +38,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @Testcontainers
 @ActiveProfiles("test")
 @ContextConfiguration(classes = {AppApplication.class, SecurityConfig.class})
-class FileControllerMvcTest {
+class FileControllerMvcTest extends DatabaseConfig {
     @Autowired
     private MockMvc mockMvc;
 
