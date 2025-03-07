@@ -6,6 +6,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 
+import org.example.app.dto.FileDto;
 import org.example.app.entity.File;
 import org.example.app.exception.FileMemoryOverflowException;
 import org.example.app.exception.FileNotFoundException;
@@ -36,7 +37,7 @@ public interface FilesController {
                     content = @Content
             )
     })
-    ResponseEntity<String> downloadFile(@PathVariable String fileId, @PathVariable String userId) throws MalformedURLException;
+    ResponseEntity<String> downloadFile(@PathVariable Long fileId, @PathVariable Long userId) throws MalformedURLException;
 
     @Operation(summary = "Загрузить файл в репозиторий")
     @ApiResponses(value = {
@@ -50,7 +51,7 @@ public interface FilesController {
             content = @Content
     )
     })
-    ResponseEntity<File> postUploadPage(@RequestBody File file) throws FileMemoryOverflowException;
+    ResponseEntity<FileDto> postUploadPage(@RequestBody File file) throws FileMemoryOverflowException;
 
     @Operation(summary = "Взять файл по данному fileId")
     @ApiResponses(value = {
@@ -65,14 +66,14 @@ public interface FilesController {
                     content = @Content
             )
     })
-    ResponseEntity<File> getFile(@PathVariable String fileId) throws FileNotFoundException;
+    ResponseEntity<FileDto> getFile(@PathVariable Long fileId) throws FileNotFoundException;
 
     @Operation(summary = "Отобразить страницу со всеми файлами")
     @ApiResponse(
             responseCode = "200",
             description = "Файлы отобразились"
     )
-    ResponseEntity<List<String>> getAllFiles();
+    ResponseEntity<List<Long>> getAllFiles();
 
     @Operation(summary = "Удалить файл из репозитория")
     @ApiResponses(value = {
@@ -87,7 +88,7 @@ public interface FilesController {
                     content = @Content
             )
     })
-    ResponseEntity<File> deleteFile(@PathVariable String fileId) throws FileNotFoundException;
+    ResponseEntity<FileDto> deleteFile(@PathVariable Long fileId) throws FileNotFoundException;
 
     @Operation(summary = "Заменить файл из репозитория")
     @ApiResponses(value = {
@@ -102,7 +103,7 @@ public interface FilesController {
                     content = @Content
             )
     })
-    ResponseEntity<File> putFile(@PathVariable String fileId, @RequestBody File file) throws FileNotFoundException;
+    ResponseEntity<FileDto> putFile(@PathVariable Long fileId, @RequestBody File file) throws FileNotFoundException;
 
     @Operation(summary = "Изменить файл из репозитория")
     @ApiResponses(value = {
@@ -117,5 +118,5 @@ public interface FilesController {
                     content = @Content
             )
     })
-    ResponseEntity<File> patchFile(@PathVariable String fileId, @RequestBody File file) throws FileNotFoundException;
+    ResponseEntity<FileDto> patchFile(@PathVariable Long fileId, @RequestBody File file) throws FileNotFoundException;
 }
