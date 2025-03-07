@@ -1,19 +1,17 @@
-create sequence file_id_seq;
-create table file
+CREATE TABLE Roles
 (
-    id       bigint primary key not null default nextval('file_id_seq'),
-    capacity integer            not null,
-    name     varchar(50)        not null
+    id           SERIAL PRIMARY KEY,
+    capacity     INT,
+    name         VARCHAR(30),
+    description  TEXT,
+    access_level INT
 );
-create sequence tag_id_seq;
-create table tag
+
+CREATE TABLE Files
 (
-    id   bigint primary key not null default nextval('tag_id_seq'),
-    name varchar(50)        not null
-);
-create table file_tag
-(
-    file_id BIGINT REFERENCES file (id) NOT NULL,
-    tag_id  BIGINT REFERENCES tag (id)  NOT NULL,
-    PRIMARY KEY (file_id, tag_id)
+    id       SERIAL PRIMARY KEY,
+    capacity INT,
+    name     VARCHAR(30),
+    owner    VARCHAR(30),
+    tag      VARCHAR(20)
 );

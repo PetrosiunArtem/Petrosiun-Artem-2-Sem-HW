@@ -1,6 +1,5 @@
 package org.example.app.service;
 
-import org.example.app.dto.FileDto;
 import org.example.app.entity.File;
 import org.example.app.exception.FileMemoryOverflowException;
 import org.example.app.exception.FileNotFoundException;
@@ -10,17 +9,17 @@ import java.util.List;
 
 public interface FilesService {
 
-    String downloadFile(URL currentUrl, Long fileId, Long userId);
+    String downloadFile(URL currentUrl, String fileId, String userId);
 
-    FileDto uploadFile(File file) throws FileMemoryOverflowException;
+    void uploadFile(File file) throws FileMemoryOverflowException;
 
-    List<Long> getAllFiles();
+    List<String> getAllFiles();
 
-    FileDto getFile(Long fileId) throws FileNotFoundException;
+    File getFile(String fileId) throws FileNotFoundException;
 
-    FileDto putFile(Long fileId, File newFile) throws FileNotFoundException;
+    void putFile(String fileId, File newFile) throws FileNotFoundException;
 
-    FileDto deleteFile(Long fileId) throws FileNotFoundException;
+    File deleteFile(String fileId) throws FileNotFoundException;
 
-    FileDto patchFile(Long fileId, File newFile) throws FileNotFoundException;
+    void patchFile(String fileId, File newFile) throws FileNotFoundException;
 }
