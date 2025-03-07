@@ -71,14 +71,14 @@ public class FilesControllerImpl implements FilesController {
 
     @Override
     @PutMapping("/files/put/{fileId}")
-    public ResponseEntity<FileDto> putFile(@PathVariable Long fileId,@RequestBody File newFile) throws FileNotFoundException {
+    public ResponseEntity<FileDto> putFile(@PathVariable Long fileId, @RequestBody File newFile) throws FileNotFoundException {
         filesService.putFile(fileId, newFile);
         return ResponseEntity.ok(fileMapper.toDto(newFile));
     }
 
     @Override
     @PatchMapping("/files/patch/{fileId}")
-    public ResponseEntity<FileDto> patchFile(@PathVariable Long fileId,@RequestBody File newFile) throws FileNotFoundException {
+    public ResponseEntity<FileDto> patchFile(@PathVariable Long fileId, @RequestBody File newFile) throws FileNotFoundException {
         FileDto fileDto = filesService.patchFile(fileId, newFile);
         return ResponseEntity.ok(fileDto);
     }

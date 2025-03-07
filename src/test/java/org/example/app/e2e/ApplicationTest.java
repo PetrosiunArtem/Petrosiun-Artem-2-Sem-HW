@@ -28,7 +28,7 @@ import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
 @ContextConfiguration(classes = {AppApplication.class, SecurityConfig.class})
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT, properties = {"spring.flyway.enabled=false" })
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT, properties = {"spring.flyway.enabled=false"})
 @Slf4j
 @Testcontainers
 @ActiveProfiles("test")
@@ -74,7 +74,7 @@ public class ApplicationTest {
                 restTemplate.postForEntity(
                         "http://localhost:" + port + "/second-memory/files/upload", mockFile2, FileDto.class);
         assertEquals(HttpStatus.CREATED, uploadResponse1.getStatusCode());
-        assertEquals(mockFile1.getName(), Objects.requireNonNull(uploadResponse1.getBody()). name());
+        assertEquals(mockFile1.getName(), Objects.requireNonNull(uploadResponse1.getBody()).name());
         assertEquals(mockFile1.getCapacity(), uploadResponse1.getBody().capacity());
         assertEquals(HttpStatus.CREATED, uploadResponse2.getStatusCode());
         assertEquals(mockFile2.getName(), Objects.requireNonNull(uploadResponse2.getBody()).name());

@@ -39,7 +39,6 @@ public class FilesServiceImpl implements FilesService {
         return "Файл успешно загрузился";
     }
 
-    // ExactlyOnce
     @Override
     @Transactional
     public FileDto uploadFile(File file) throws FileMemoryOverflowException {
