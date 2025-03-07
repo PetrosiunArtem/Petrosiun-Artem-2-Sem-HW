@@ -11,7 +11,7 @@ import org.example.app.entity.File;
 import org.example.app.exception.FileMemoryOverflowException;
 import org.example.app.exception.FileNotFoundException;
 import org.example.app.security.SecurityConfig;
-import org.example.app.service.FilesService;
+import org.example.app.service.FilesServiceImpl;
 import org.junit.jupiter.api.Test;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -37,7 +37,7 @@ class FileControllerMvcTest {
     private MockMvc mockMvc;
 
     @MockitoBean
-    private FilesService fileService;
+    private FilesServiceImpl fileService;
 
     private static final File MOCK_FILE = new File("Test file.txt", 1024);
     private static final String FILE_JSON = "{ \"fileName\": \"Test file.txt\",\"capacity\": 1024}";

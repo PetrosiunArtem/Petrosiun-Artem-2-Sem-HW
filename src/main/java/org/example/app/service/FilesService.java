@@ -1,6 +1,5 @@
 package org.example.app.service;
 
-import lombok.extern.slf4j.Slf4j;
 import org.example.app.entity.File;
 import org.example.app.exception.FileMemoryOverflowException;
 import org.example.app.exception.FileNotFoundException;
@@ -8,50 +7,19 @@ import org.example.app.exception.FileNotFoundException;
 import java.net.URL;
 import java.util.List;
 
-import org.example.app.repository.FilesRepositoryImpl;
-import org.springframework.stereotype.Service;
+public interface FilesService {
 
-@Service
-@Slf4j
-public class FilesService {
-    private final FilesRepositoryImpl filesRepository;
+    String downloadFile(URL currentUrl, String fileId, String userId);
 
-    public FilesService(FilesRepositoryImpl filesRepository) {
-        this.filesRepository = filesRepository;
-    }
+    void uploadFile(File file) throws FileMemoryOverflowException;
 
-    public String downloadFile(URL currentUrl, String fileId, String userId) {
-        log.info("Функция по скачиванию файла вызвана в сервисе");
-        return filesRepository.downloadFile(currentUrl, fileId, userId);
-    }
+    List<String> getAllFiles();
 
-    public void uploadFile(File file) throws FileMemoryOverflowException {
-        log.info("Функция по загрузке файла вызвана в сервисе");
-        filesRepository.uploadFile(file);
-    }
+    File getFile(String fileId) throws FileNotFoundException;
 
-    public List<String> getAllFiles() {
-        log.info("Функция по показу всех файлов вызвана в сервисе");
-        return filesRepository.getAllFiles();
-    }
+    void putFile(String fileId, File newFile) throws FileNotFoundException;
 
-    public File getFile(String fileId) throws FileNotFoundException {
-        log.info("Функция по взятию файла вызвана в сервисе");
-        return filesRepository.getFile(fileId);
-    }
+    File deleteFile(String fileId) throws FileNotFoundException;
 
-    public void putFile(String fileId, File newFile) throws FileNotFoundException {
-        log.info("Функция по замене файла на новый вызвана в сервисе");
-        filesRepository.putFile(fileId, newFile);
-    }
-
-    public File deleteFile(String fileId) throws FileNotFoundException {
-        log.info("Функция по удалению файла вызвана в репозитории");
-        return filesRepository.deleteFile(fileId);
-    }
-
-    public void patchFile(String fileId, File newFile) throws FileNotFoundException {
-        log.info("Функция по изменению файла вызвана в репозитории");
-        filesRepository.patchFile(fileId, newFile);
-    }
+    void patchFile(String fileId, File newFile) throws FileNotFoundException;
 }

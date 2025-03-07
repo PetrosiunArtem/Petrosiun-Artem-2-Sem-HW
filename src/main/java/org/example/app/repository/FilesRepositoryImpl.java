@@ -7,6 +7,8 @@ import org.example.app.entity.File;
 import org.example.app.exception.FileMemoryOverflowException;
 import org.example.app.exception.FileNotFoundException;
 import org.springframework.stereotype.Repository;
+import org.springframework.web.client.RestTemplate;
+import org.springframework.web.reactive.function.client.WebClient;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -17,6 +19,8 @@ import java.util.List;
 public class FilesRepositoryImpl implements FilesRepository {
     private static final HashMap<String, File> files = new HashMap<>();
     private static final int CAPACITY = 10 * 1024 * 1024;
+    private final RestTemplate restTemplate = new RestTemplate();
+    private final WebClient webClient = WebClient.create();
 
     @Override
     public String downloadFile(URL currentUrl, String bucketName, String fileName) {
@@ -32,6 +36,8 @@ public class FilesRepositoryImpl implements FilesRepository {
             throw new FileMemoryOverflowException();
         }
         files.put(Integer.toString(files.size()), file);
+        String response = restTemplate.getForObject("https://dzen.ru/", String.class);
+        log.info(response);
     }
 
     @Override
@@ -73,5 +79,13 @@ public class FilesRepositoryImpl implements FilesRepository {
             throw new FileNotFoundException("No such file exists");
         }
         files.replace(fileId, newFile);
+        String response =
+                webClient
+                        .get()
+                        .uri("https://dzen.ru/")
+                        .retrieve()
+                        .bodyToMono(String.class)
+                        .block();
+        log.info(response);
     }
 }

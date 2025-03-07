@@ -5,6 +5,9 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.util.List;
 
+import lombok.extern.slf4j.Slf4j;
+import org.example.app.AppApplication;
+import org.example.app.security.SecurityConfig;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -15,9 +18,14 @@ import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.example.app.entity.File;
+import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.DynamicPropertyRegistry;
+import org.springframework.test.context.DynamicPropertySource;
+import org.testcontainers.containers.PostgreSQLContainer;
 
-
+@ContextConfiguration(classes = {AppApplication.class, SecurityConfig.class})
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@Slf4j
 public class ApplicationTest {
 
     @LocalServerPort
@@ -26,8 +34,30 @@ public class ApplicationTest {
     @Autowired
     private TestRestTemplate restTemplate;
 
+    static PostgreSQLContainer<?> postgresContainer =
+            new PostgreSQLContainer<>("postgres:13")
+                    .withInitScript("db-init-script.sql")
+                    .withDatabaseName("test database")
+                    .withUsername("My user")
+                    .withPassword("My password");
+
+    static {
+        postgresContainer.start();
+    }
+
+    @DynamicPropertySource
+    static void registerProperties(DynamicPropertyRegistry registry) {
+        registry.add("spring.datasource.url", postgresContainer::getJdbcUrl);
+        registry.add("spring.datasource.username", postgresContainer::getUsername);
+        registry.add("spring.datasource.password", postgresContainer::getPassword);
+    }
+
     @Test
     void End2EndTest() {
+        log.info("Db host: {}", postgresContainer.getHost());
+        log.info("Db port: {}", postgresContainer.getFirstMappedPort());
+        log.info("PostgreSQL is running at: {}", postgresContainer.getJdbcUrl());
+
         // Step 1: Create files
         File mockFile1 = new File("book.txt", 48 * 1024);
         File mockFile2 = new File("secrets.txt", 1024 * 1024);
