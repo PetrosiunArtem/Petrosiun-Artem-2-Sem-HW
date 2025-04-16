@@ -1,21 +1,25 @@
 package org.example.app.service;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.example.app.dto.Action;
 import org.example.app.dto.FileDto;
+import org.example.app.dto.MessageDto;
 import org.example.app.entity.File;
 import org.example.app.exception.FileMemoryOverflowException;
 import org.example.app.exception.FileNotFoundException;
 import org.example.app.mapper.FileMapper;
 import org.example.app.repository.FilesRepository;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.Cacheable;
 
 import java.net.URL;
+import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.springframework.stereotype.Service;
@@ -25,8 +29,7 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 public class FilesServiceImpl implements FilesService {
     private final FilesRepository filesRepository;
-
-    @Autowired
+    private final KafkaProducerService kafkaProducerService;
     private final FileMapper fileMapper;
     private static final int CAPACITY = 10 * 1024 * 1024;
     // Потокобезопасен
@@ -34,14 +37,15 @@ public class FilesServiceImpl implements FilesService {
 
     @Override
     @Transactional
-    public String downloadFile(URL currentUrl, Long fileId, Long userId) {
+    public String downloadFile(URL currentUrl, Long fileId, Long userId) throws JsonProcessingException {
         log.info("Функция по скачиванию файла вызвана в сервисе");
+        kafkaProducerService.sendMessage(new MessageDto(fileId, Instant.now(), Action.SELECT, "download file with id: " + fileId));
         return "Файл успешно загрузился";
     }
 
     @Override
     @Transactional
-    public FileDto uploadFile(File file) throws FileMemoryOverflowException {
+    public FileDto uploadFile(File file) throws FileMemoryOverflowException, JsonProcessingException {
         log.info("Функция по загрузке файла вызвана в сервисе");
         if (!processedFiles.add(file.getName())) {
             log.info("File {} already being uploaded", file.getName());
@@ -51,14 +55,16 @@ public class FilesServiceImpl implements FilesService {
             throw new FileMemoryOverflowException();
         }
         filesRepository.save(file);
+        kafkaProducerService.sendMessage(new MessageDto(file.getId(), Instant.now(), Action.INSERT, "upload file with id: " + file.getId()));
         return fileMapper.toDto(file);
     }
 
     @Transactional
     @Cacheable("files")
     @Override
-    public List<Long> getAllFiles() {
+    public List<Long> getAllFiles() throws JsonProcessingException {
         log.info("Функция по показу всех файлов вызвана в сервисе");
+        kafkaProducerService.sendMessage(new MessageDto(null, Instant.now(), Action.SELECT, "select all files"));
         return filesRepository.findAllId();
     }
 
@@ -67,13 +73,14 @@ public class FilesServiceImpl implements FilesService {
             cacheNames = {"getFile"},
             key = "{#fileId}")
     @Override
-    public FileDto getFile(Long fileId) throws FileNotFoundException {
+    public FileDto getFile(Long fileId) throws FileNotFoundException, JsonProcessingException {
         log.info("Функция по взятию файла вызвана в сервисе");
         Optional<File> response = filesRepository.findById(fileId);
         if (response.isEmpty()) {
             throw new FileNotFoundException();
         }
         File file = response.get();
+        kafkaProducerService.sendMessage(new MessageDto(fileId, Instant.now(), Action.SELECT, "select file with id: " + fileId));
         return fileMapper.toDto(file);
     }
 
@@ -82,7 +89,7 @@ public class FilesServiceImpl implements FilesService {
             cacheNames = {"putFile"},
             key = "{#fileId}")
     @Override
-    public FileDto putFile(Long fileId, File newFile) throws FileNotFoundException {
+    public FileDto putFile(Long fileId, File newFile) throws FileNotFoundException, JsonProcessingException {
         log.info("Функция по замене файла на новый вызвана в сервисе");
         Optional<File> response = filesRepository.findById(fileId);
         if (response.isEmpty()) {
@@ -91,6 +98,7 @@ public class FilesServiceImpl implements FilesService {
         File file = response.get();
         file.setName(newFile.getName());
         filesRepository.save(file);
+        kafkaProducerService.sendMessage(new MessageDto(fileId, Instant.now(), Action.UPDATE, "update file with id: " + fileId));
         return fileMapper.toDto(file);
     }
 
@@ -99,7 +107,7 @@ public class FilesServiceImpl implements FilesService {
             cacheNames = {"deleteFile"},
             key = "{#fileId}")
     @Override
-    public FileDto deleteFile(Long fileId) throws FileNotFoundException {
+    public FileDto deleteFile(Long fileId) throws FileNotFoundException, JsonProcessingException {
         log.info("Функция по удалению файла вызвана в сервисе");
         Optional<File> response = filesRepository.findById(fileId);
         if (response.isEmpty()) {
@@ -107,6 +115,7 @@ public class FilesServiceImpl implements FilesService {
         }
         File file = response.get();
         filesRepository.delete(file);
+        kafkaProducerService.sendMessage(new MessageDto(fileId, Instant.now(), Action.DELETE, "delete file with id: " + fileId));
         return fileMapper.toDto(file);
     }
 
@@ -115,7 +124,7 @@ public class FilesServiceImpl implements FilesService {
             cacheNames = {"patchFile"},
             key = "{#fileId}")
     @Override
-    public FileDto patchFile(Long fileId, File newFile) throws FileNotFoundException {
+    public FileDto patchFile(Long fileId, File newFile) throws FileNotFoundException, JsonProcessingException {
         log.info("Функция по изменению файла вызвана в сервисе");
         Optional<File> response = filesRepository.findById(fileId);
         if (response.isEmpty()) {
@@ -124,6 +133,7 @@ public class FilesServiceImpl implements FilesService {
         File file = response.get();
         file.setName(newFile.getName());
         filesRepository.save(file);
+        kafkaProducerService.sendMessage(new MessageDto(fileId, Instant.now(), Action.UPDATE, "patch file with id: " + fileId));
         return fileMapper.toDto(file);
     }
 }

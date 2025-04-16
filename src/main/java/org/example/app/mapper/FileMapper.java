@@ -10,7 +10,7 @@ public class FileMapper {
         Long id = file.getId();
         String name = file.getName();
         int capacity = file.getCapacity();
-
+ 
         return new FileDto(id, name, capacity);
     }
 

@@ -53,8 +53,7 @@ class FileControllerMvcTest extends DatabaseConfig {
     private static final FileDto MOCK_FILE_DTO = new FileDto(1L, "Test file.txt", 1024);
 
     @Test
-
-    public void shouldSuccessfullyFindFile() throws Exception {
+    void shouldSuccessfullyFindFile() throws Exception {
         when(fileService.getFile(any(Long.class))).thenReturn(MOCK_FILE_DTO);
         mockMvc
                 .perform(get("/second-memory/files/get/1"))
@@ -64,20 +63,20 @@ class FileControllerMvcTest extends DatabaseConfig {
     }
 
     @Test
-    public void shouldFailToFindFile() throws Exception {
+    void shouldFailToFindFile() throws Exception {
         when(fileService.getFile(any(Long.class))).thenThrow(FileNotFoundException.class);
         mockMvc.perform(get("/second-memory/Test")).andExpect(status().isNotFound());
     }
 
     @Test
-    public void shouldSuccessfullyReturnFiles() throws Exception {
+    void shouldSuccessfullyReturnFiles() throws Exception {
         ArrayList<Long> mockList = new ArrayList<>(Arrays.asList(0L, 1L));
         when(fileService.getAllFiles()).thenReturn(mockList);
         mockMvc.perform(get("/second-memory/files")).andExpect(status().isOk());
     }
 
     @Test
-    public void shouldSuccessfullyUploadFile() throws Exception {
+    void shouldSuccessfullyUploadFile() throws Exception {
         when(fileService.uploadFile(new File(any(String.class), 1024))).thenReturn(MOCK_FILE_DTO);
         mockMvc
                 .perform(post("/second-memory/files/upload").contentType("application/json").content(FILE_JSON))
@@ -85,7 +84,7 @@ class FileControllerMvcTest extends DatabaseConfig {
     }
 
     @Test
-    public void shouldFailUploadFile() throws Exception {
+    void shouldFailUploadFile() throws Exception {
         doThrow(FileMemoryOverflowException.class)
                 .when(fileService)
                 .uploadFile(new File(any(String.class), 1024));
@@ -95,7 +94,7 @@ class FileControllerMvcTest extends DatabaseConfig {
     }
 
     @Test
-    public void shouldSuccessfullyUpdateFile() throws Exception {
+    void shouldSuccessfullyUpdateFile() throws Exception {
         when(fileService.patchFile(any(Long.class), any(File.class))).thenReturn(MOCK_FILE_DTO);
         mockMvc
                 .perform(patch("/second-memory/files/patch/1").contentType("application/json").content(FILE_JSON))
@@ -105,7 +104,7 @@ class FileControllerMvcTest extends DatabaseConfig {
     }
 
     @Test
-    public void shouldFailToUpdateFile() throws Exception {
+    void shouldFailToUpdateFile() throws Exception {
         doThrow(FileNotFoundException.class).when(fileService).patchFile(any(Long.class), any(File.class));
         mockMvc
                 .perform(patch("/second-memory/files/patch/10").contentType("application/json").content(FILE_JSON))
@@ -113,7 +112,7 @@ class FileControllerMvcTest extends DatabaseConfig {
     }
 
     @Test
-    public void shouldSuccessfullyDeleteFile() throws Exception {
+    void shouldSuccessfullyDeleteFile() throws Exception {
         when(fileService.deleteFile(any(Long.class))).thenReturn(MOCK_FILE_DTO);
         mockMvc
                 .perform(delete("/second-memory/files/delete/12"))
@@ -123,7 +122,7 @@ class FileControllerMvcTest extends DatabaseConfig {
     }
 
     @Test
-    public void shouldFailToDeleteFile() throws Exception {
+    void shouldFailToDeleteFile() throws Exception {
         when(fileService.deleteFile(any(Long.class))).thenThrow(FileNotFoundException.class);
         mockMvc.perform(delete("/second-memory/files/delete/12")).andExpect(status().isNotFound());
     }

@@ -4,6 +4,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.List;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -33,53 +34,52 @@ public class FilesControllerImpl implements FilesController {
     private final FilesServiceImpl filesService;
     private final FileMapper fileMapper;
 
-
     @Override
     @GetMapping("/files/info/download/{fileId}/{userId}")
-    public ResponseEntity<String> downloadFile(@PathVariable Long fileId, @PathVariable Long userId) throws MalformedURLException {
+    public ResponseEntity<String> downloadFile(@PathVariable Long fileId, @PathVariable Long userId) throws MalformedURLException, JsonProcessingException {
         URL currentURL = new URL("https://localhost:8080/second-memory/files/info/download/" + fileId + "/" + userId);
-        return ResponseEntity.ok(filesService.downloadFile(currentURL, fileId, userId));
+        return ResponseEntity.ok().header("fileId", String.valueOf(fileId)).body(filesService.downloadFile(currentURL, fileId, userId));
     }
 
     @Override
     @PostMapping("/files/upload")
-    public ResponseEntity<FileDto> postUploadPage(@RequestBody File file) throws FileMemoryOverflowException {
+    public ResponseEntity<FileDto> postUploadPage(@RequestBody File file) throws FileMemoryOverflowException, JsonProcessingException {
         FileDto fileDto = filesService.uploadFile(file);
         log.info("File uploaded successfully");
-        return ResponseEntity.status(201).body(fileDto);
+        return ResponseEntity.status(201).header("fileId", String.valueOf(file.getId())).body(fileDto);
     }
 
     @Override
     @GetMapping("/files/get/{fileId}")
-    public ResponseEntity<FileDto> getFile(@PathVariable Long fileId) throws FileNotFoundException {
+    public ResponseEntity<FileDto> getFile(@PathVariable Long fileId) throws FileNotFoundException, JsonProcessingException {
         FileDto fIleDto = filesService.getFile(fileId);
-        return ResponseEntity.ok(fIleDto);
+        return ResponseEntity.ok().header("fileId", String.valueOf(fileId)).body(fIleDto);
     }
 
     @Override
     @GetMapping("/files")
-    public ResponseEntity<List<Long>> getAllFiles() {
-        return ResponseEntity.ok(filesService.getAllFiles());
+    public ResponseEntity<List<Long>> getAllFiles() throws JsonProcessingException {
+        return ResponseEntity.ok().body(filesService.getAllFiles());
     }
 
     @Override
     @DeleteMapping("/files/delete/{fileId}")
-    public ResponseEntity<FileDto> deleteFile(@PathVariable Long fileId) throws FileNotFoundException {
+    public ResponseEntity<FileDto> deleteFile(@PathVariable Long fileId) throws FileNotFoundException, JsonProcessingException {
         FileDto fIleDto = filesService.deleteFile(fileId);
-        return ResponseEntity.ok(fIleDto);
+        return ResponseEntity.ok().header("fileId", String.valueOf(fileId)).body(fIleDto);
     }
 
     @Override
     @PutMapping("/files/put/{fileId}")
-    public ResponseEntity<FileDto> putFile(@PathVariable Long fileId, @RequestBody File newFile) throws FileNotFoundException {
+    public ResponseEntity<FileDto> putFile(@PathVariable Long fileId, @RequestBody File newFile) throws FileNotFoundException, JsonProcessingException {
         filesService.putFile(fileId, newFile);
-        return ResponseEntity.ok(fileMapper.toDto(newFile));
+        return ResponseEntity.ok().header("fileId", String.valueOf(fileId)).body(fileMapper.toDto(newFile));
     }
 
     @Override
     @PatchMapping("/files/patch/{fileId}")
-    public ResponseEntity<FileDto> patchFile(@PathVariable Long fileId, @RequestBody File newFile) throws FileNotFoundException {
+    public ResponseEntity<FileDto> patchFile(@PathVariable Long fileId, @RequestBody File newFile) throws FileNotFoundException, JsonProcessingException {
         FileDto fileDto = filesService.patchFile(fileId, newFile);
-        return ResponseEntity.ok(fileDto);
+        return ResponseEntity.ok().header("fileId", String.valueOf(fileId)).body(fileDto);
     }
 }
