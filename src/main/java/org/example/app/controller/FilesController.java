@@ -1,5 +1,6 @@
 package org.example.app.controller;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -37,7 +38,7 @@ public interface FilesController {
                     content = @Content
             )
     })
-    ResponseEntity<String> downloadFile(@PathVariable Long fileId, @PathVariable Long userId) throws MalformedURLException;
+    ResponseEntity<String> downloadFile(@PathVariable Long fileId, @PathVariable Long userId) throws MalformedURLException, JsonProcessingException;
 
     @Operation(summary = "Загрузить файл в репозиторий")
     @ApiResponses(value = {
@@ -51,7 +52,7 @@ public interface FilesController {
             content = @Content
     )
     })
-    ResponseEntity<FileDto> postUploadPage(@RequestBody File file) throws FileMemoryOverflowException;
+    ResponseEntity<FileDto> postUploadPage(@RequestBody File file) throws FileMemoryOverflowException, JsonProcessingException;
 
     @Operation(summary = "Взять файл по данному fileId")
     @ApiResponses(value = {
@@ -66,14 +67,14 @@ public interface FilesController {
                     content = @Content
             )
     })
-    ResponseEntity<FileDto> getFile(@PathVariable Long fileId) throws FileNotFoundException;
+    ResponseEntity<FileDto> getFile(@PathVariable Long fileId) throws FileNotFoundException, JsonProcessingException;
 
     @Operation(summary = "Отобразить страницу со всеми файлами")
     @ApiResponse(
             responseCode = "200",
             description = "Файлы отобразились"
     )
-    ResponseEntity<List<Long>> getAllFiles();
+    ResponseEntity<List<Long>> getAllFiles() throws JsonProcessingException;
 
     @Operation(summary = "Удалить файл из репозитория")
     @ApiResponses(value = {
@@ -88,7 +89,7 @@ public interface FilesController {
                     content = @Content
             )
     })
-    ResponseEntity<FileDto> deleteFile(@PathVariable Long fileId) throws FileNotFoundException;
+    ResponseEntity<FileDto> deleteFile(@PathVariable Long fileId) throws FileNotFoundException, JsonProcessingException;
 
     @Operation(summary = "Заменить файл из репозитория")
     @ApiResponses(value = {
@@ -103,7 +104,7 @@ public interface FilesController {
                     content = @Content
             )
     })
-    ResponseEntity<FileDto> putFile(@PathVariable Long fileId, @RequestBody File file) throws FileNotFoundException;
+    ResponseEntity<FileDto> putFile(@PathVariable Long fileId, @RequestBody File file) throws FileNotFoundException, JsonProcessingException;
 
     @Operation(summary = "Изменить файл из репозитория")
     @ApiResponses(value = {
@@ -118,5 +119,5 @@ public interface FilesController {
                     content = @Content
             )
     })
-    ResponseEntity<FileDto> patchFile(@PathVariable Long fileId, @RequestBody File file) throws FileNotFoundException;
+    ResponseEntity<FileDto> patchFile(@PathVariable Long fileId, @RequestBody File file) throws FileNotFoundException, JsonProcessingException;
 }

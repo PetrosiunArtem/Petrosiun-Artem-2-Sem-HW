@@ -20,6 +20,11 @@ spring:
         format_sql: true
   flyway:
     enabled: true
+  kafka:
+    bootstrap-servers: localhost:29093
+
+topic-to-send-message: user_audit_topic
+
 springdoc:
   swagger-ui:
     path: /swagger-ui.html
