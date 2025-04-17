@@ -6,19 +6,10 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.JoinTable;
-import jakarta.persistence.ManyToMany;
 import jakarta.persistence.Table;
 import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.Setter;
-
-import java.util.HashSet;
-import java.util.Set;
-
-import static jakarta.persistence.CascadeType.PERSIST;
-import static jakarta.persistence.FetchType.LAZY;
 
 @Entity
 @Getter
@@ -41,13 +32,6 @@ public class File {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @ManyToMany(fetch = LAZY, cascade = PERSIST)
-    @JoinTable(
-            name = "file_tag",
-            joinColumns = @JoinColumn(name = "file_id"),
-            inverseJoinColumns = @JoinColumn(name = "tag_id")
-    )
-    private final Set<Tag> tags = new HashSet<>();
 
     protected File() {
     }
