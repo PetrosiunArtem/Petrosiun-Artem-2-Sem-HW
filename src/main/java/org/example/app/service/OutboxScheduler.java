@@ -27,7 +27,6 @@ public class OutboxScheduler {
     for (Outbox outboxRecord : result) {
       CompletableFuture<SendResult<String, String>> sendResult =
           kafkaTemplate.send(topic.name(), outboxRecord.getData());
-      // block on sendResult until finished
     }
     outboxRepository.deleteAll(result);
   }

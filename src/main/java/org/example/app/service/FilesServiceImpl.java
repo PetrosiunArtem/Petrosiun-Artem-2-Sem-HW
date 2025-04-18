@@ -19,7 +19,6 @@ import org.springframework.cache.annotation.Cacheable;
 import java.net.URL;
 import java.time.Instant;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -32,7 +31,6 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 public class FilesServiceImpl implements FilesService {
   private final FilesRepository filesRepository;
-  private final KafkaProducerService kafkaProducerService;
   private final FileMapper fileMapper;
   private static final int CAPACITY = 10 * 1024 * 1024;
   private final OutboxRepository outboxRepository;
@@ -45,8 +43,13 @@ public class FilesServiceImpl implements FilesService {
   public String downloadFile(URL currentUrl, Long fileId, Long userId)
       throws JsonProcessingException {
     log.info("Функция по скачиванию файла вызвана в сервисе");
-    kafkaProducerService.sendMessage(
-        new MessageDto(fileId, Instant.now(), Action.SELECT, "download file with id: " + fileId));
+    outboxRepository.save(
+        Outbox.builder()
+            .data(
+                objectMapper.writeValueAsString(
+                    new MessageDto(
+                        fileId, Instant.now(), Action.SELECT, "select file with id: " + fileId)))
+            .build());
     return "Файл успешно загрузился";
   }
 
@@ -72,10 +75,6 @@ public class FilesServiceImpl implements FilesService {
                         Action.INSERT,
                         "insert file with id: " + file.getId())))
             .build());
-    //    kafkaProducerService.sendMessage(
-    //        new MessageDto(
-    //            file.getId(), Instant.now(), Action.INSERT, "upload file with id: " +
-    // file.getId()));
     return fileMapper.toDto(file);
   }
 
@@ -84,8 +83,12 @@ public class FilesServiceImpl implements FilesService {
   @Override
   public List<Long> getAllFiles() throws JsonProcessingException {
     log.info("Функция по показу всех файлов вызвана в сервисе");
-    kafkaProducerService.sendMessage(
-        new MessageDto(null, Instant.now(), Action.SELECT, "select all files"));
+    outboxRepository.save(
+        Outbox.builder()
+            .data(
+                objectMapper.writeValueAsString(
+                    new MessageDto(null, Instant.now(), Action.SELECT, "select all files")))
+            .build());
     return filesRepository.findAllId();
   }
 
@@ -101,8 +104,16 @@ public class FilesServiceImpl implements FilesService {
       throw new FileNotFoundException();
     }
     File file = response.get();
-    kafkaProducerService.sendMessage(
-        new MessageDto(fileId, Instant.now(), Action.SELECT, "select file with id: " + fileId));
+    outboxRepository.save(
+        Outbox.builder()
+            .data(
+                objectMapper.writeValueAsString(
+                    new MessageDto(
+                        file.getId(),
+                        Instant.now(),
+                        Action.SELECT,
+                        "select file with id: " + fileId)))
+            .build());
     return fileMapper.toDto(file);
   }
 
@@ -121,8 +132,13 @@ public class FilesServiceImpl implements FilesService {
     File file = response.get();
     file.setName(newFile.getName());
     filesRepository.save(file);
-    kafkaProducerService.sendMessage(
-        new MessageDto(fileId, Instant.now(), Action.UPDATE, "update file with id: " + fileId));
+    outboxRepository.save(
+        Outbox.builder()
+            .data(
+                objectMapper.writeValueAsString(
+                    new MessageDto(
+                        fileId, Instant.now(), Action.UPDATE, "update file with id: " + fileId)))
+            .build());
     return fileMapper.toDto(file);
   }
 
@@ -139,8 +155,13 @@ public class FilesServiceImpl implements FilesService {
     }
     File file = response.get();
     filesRepository.delete(file);
-    kafkaProducerService.sendMessage(
-        new MessageDto(fileId, Instant.now(), Action.DELETE, "delete file with id: " + fileId));
+    outboxRepository.save(
+        Outbox.builder()
+            .data(
+                objectMapper.writeValueAsString(
+                    new MessageDto(
+                        fileId, Instant.now(), Action.DELETE, "delete file with id: " + fileId)))
+            .build());
     return fileMapper.toDto(file);
   }
 
@@ -159,8 +180,13 @@ public class FilesServiceImpl implements FilesService {
     File file = response.get();
     file.setName(newFile.getName());
     filesRepository.save(file);
-    kafkaProducerService.sendMessage(
-        new MessageDto(fileId, Instant.now(), Action.UPDATE, "patch file with id: " + fileId));
+    outboxRepository.save(
+        Outbox.builder()
+            .data(
+                objectMapper.writeValueAsString(
+                    new MessageDto(
+                        fileId, Instant.now(), Action.UPDATE, "patch file with id: " + fileId)))
+            .build());
     return fileMapper.toDto(file);
   }
 }
