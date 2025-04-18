@@ -30,8 +30,6 @@ public class Tag {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @ManyToMany(mappedBy = "tags")
-    private final Set<File> files = new HashSet<>();
 
     protected Tag() {
     }

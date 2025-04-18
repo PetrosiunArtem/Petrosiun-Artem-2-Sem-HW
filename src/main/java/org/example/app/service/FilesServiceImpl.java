@@ -1,17 +1,19 @@
 package org.example.app.service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import jakarta.transaction.Transactional;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.example.app.dto.Action;
 import org.example.app.dto.FileDto;
 import org.example.app.dto.MessageDto;
 import org.example.app.entity.File;
+import org.example.app.entity.Outbox;
 import org.example.app.exception.FileMemoryOverflowException;
 import org.example.app.exception.FileNotFoundException;
 import org.example.app.mapper.FileMapper;
 import org.example.app.repository.FilesRepository;
+import org.example.app.repository.OutboxRepository;
 import org.springframework.cache.annotation.Cacheable;
 
 import java.net.URL;
@@ -19,121 +21,172 @@ import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
-import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @Slf4j
 @RequiredArgsConstructor
 public class FilesServiceImpl implements FilesService {
-    private final FilesRepository filesRepository;
-    private final KafkaProducerService kafkaProducerService;
-    private final FileMapper fileMapper;
-    private static final int CAPACITY = 10 * 1024 * 1024;
-    // Потокобезопасен
-    private final Set<String> processedFiles = ConcurrentHashMap.newKeySet();
+  private final FilesRepository filesRepository;
+  private final FileMapper fileMapper;
+  private static final int CAPACITY = 10 * 1024 * 1024;
+  private final OutboxRepository outboxRepository;
+  private final ObjectMapper objectMapper;
+  // Потокобезопасен
+  private final Set<String> processedFiles = ConcurrentHashMap.newKeySet();
 
-    @Override
-    @Transactional
-    public String downloadFile(URL currentUrl, Long fileId, Long userId) throws JsonProcessingException {
-        log.info("Функция по скачиванию файла вызвана в сервисе");
-        kafkaProducerService.sendMessage(new MessageDto(fileId, Instant.now(), Action.SELECT, "download file with id: " + fileId));
-        return "Файл успешно загрузился";
-    }
+  @Override
+  @Transactional
+  public String downloadFile(URL currentUrl, Long fileId, Long userId)
+      throws JsonProcessingException {
+    log.info("Функция по скачиванию файла вызвана в сервисе");
+    outboxRepository.save(
+        Outbox.builder()
+            .data(
+                objectMapper.writeValueAsString(
+                    new MessageDto(
+                        fileId, Instant.now(), Action.SELECT, "select file with id: " + fileId)))
+            .build());
+    return "Файл успешно загрузился";
+  }
 
-    @Override
-    @Transactional
-    public FileDto uploadFile(File file) throws FileMemoryOverflowException, JsonProcessingException {
-        log.info("Функция по загрузке файла вызвана в сервисе");
-        if (!processedFiles.add(file.getName())) {
-            log.info("File {} already being uploaded", file.getName());
-            return fileMapper.toDto(file);
-        }
-        if (file.getCapacity() > CAPACITY) {
-            throw new FileMemoryOverflowException();
-        }
-        filesRepository.save(file);
-        kafkaProducerService.sendMessage(new MessageDto(file.getId(), Instant.now(), Action.INSERT, "upload file with id: " + file.getId()));
-        return fileMapper.toDto(file);
+  @Override
+  @Transactional
+  public FileDto uploadFile(File file) throws FileMemoryOverflowException, JsonProcessingException {
+    log.info("Функция по загрузке файла вызвана в сервисе");
+    if (!processedFiles.add(file.getName())) {
+      log.info("File {} already being uploaded", file.getName());
+      return fileMapper.toDto(file);
     }
+    if (file.getCapacity() > CAPACITY) {
+      throw new FileMemoryOverflowException();
+    }
+    filesRepository.save(file);
+    outboxRepository.save(
+        Outbox.builder()
+            .data(
+                objectMapper.writeValueAsString(
+                    new MessageDto(
+                        file.getId(),
+                        Instant.now(),
+                        Action.INSERT,
+                        "insert file with id: " + file.getId())))
+            .build());
+    return fileMapper.toDto(file);
+  }
 
-    @Transactional
-    @Cacheable("files")
-    @Override
-    public List<Long> getAllFiles() throws JsonProcessingException {
-        log.info("Функция по показу всех файлов вызвана в сервисе");
-        kafkaProducerService.sendMessage(new MessageDto(null, Instant.now(), Action.SELECT, "select all files"));
-        return filesRepository.findAllId();
-    }
+  @Transactional
+  @Cacheable("files")
+  @Override
+  public List<Long> getAllFiles() throws JsonProcessingException {
+    log.info("Функция по показу всех файлов вызвана в сервисе");
+    outboxRepository.save(
+        Outbox.builder()
+            .data(
+                objectMapper.writeValueAsString(
+                    new MessageDto(null, Instant.now(), Action.SELECT, "select all files")))
+            .build());
+    return filesRepository.findAllId();
+  }
 
-    @Transactional
-    @Cacheable(
-            cacheNames = {"getFile"},
-            key = "{#fileId}")
-    @Override
-    public FileDto getFile(Long fileId) throws FileNotFoundException, JsonProcessingException {
-        log.info("Функция по взятию файла вызвана в сервисе");
-        Optional<File> response = filesRepository.findById(fileId);
-        if (response.isEmpty()) {
-            throw new FileNotFoundException();
-        }
-        File file = response.get();
-        kafkaProducerService.sendMessage(new MessageDto(fileId, Instant.now(), Action.SELECT, "select file with id: " + fileId));
-        return fileMapper.toDto(file);
+  @Transactional
+  @Cacheable(
+      cacheNames = {"getFile"},
+      key = "{#fileId}")
+  @Override
+  public FileDto getFile(Long fileId) throws FileNotFoundException, JsonProcessingException {
+    log.info("Функция по взятию файла вызвана в сервисе");
+    Optional<File> response = filesRepository.findById(fileId);
+    if (response.isEmpty()) {
+      throw new FileNotFoundException();
     }
+    File file = response.get();
+    outboxRepository.save(
+        Outbox.builder()
+            .data(
+                objectMapper.writeValueAsString(
+                    new MessageDto(
+                        file.getId(),
+                        Instant.now(),
+                        Action.SELECT,
+                        "select file with id: " + fileId)))
+            .build());
+    return fileMapper.toDto(file);
+  }
 
-    @Transactional
-    @Cacheable(
-            cacheNames = {"putFile"},
-            key = "{#fileId}")
-    @Override
-    public FileDto putFile(Long fileId, File newFile) throws FileNotFoundException, JsonProcessingException {
-        log.info("Функция по замене файла на новый вызвана в сервисе");
-        Optional<File> response = filesRepository.findById(fileId);
-        if (response.isEmpty()) {
-            throw new FileNotFoundException();
-        }
-        File file = response.get();
-        file.setName(newFile.getName());
-        filesRepository.save(file);
-        kafkaProducerService.sendMessage(new MessageDto(fileId, Instant.now(), Action.UPDATE, "update file with id: " + fileId));
-        return fileMapper.toDto(file);
+  @Transactional
+  @Cacheable(
+      cacheNames = {"putFile"},
+      key = "{#fileId}")
+  @Override
+  public FileDto putFile(Long fileId, File newFile)
+      throws FileNotFoundException, JsonProcessingException {
+    log.info("Функция по замене файла на новый вызвана в сервисе");
+    Optional<File> response = filesRepository.findById(fileId);
+    if (response.isEmpty()) {
+      throw new FileNotFoundException();
     }
+    File file = response.get();
+    file.setName(newFile.getName());
+    filesRepository.save(file);
+    outboxRepository.save(
+        Outbox.builder()
+            .data(
+                objectMapper.writeValueAsString(
+                    new MessageDto(
+                        fileId, Instant.now(), Action.UPDATE, "update file with id: " + fileId)))
+            .build());
+    return fileMapper.toDto(file);
+  }
 
-    @Transactional
-    @Cacheable(
-            cacheNames = {"deleteFile"},
-            key = "{#fileId}")
-    @Override
-    public FileDto deleteFile(Long fileId) throws FileNotFoundException, JsonProcessingException {
-        log.info("Функция по удалению файла вызвана в сервисе");
-        Optional<File> response = filesRepository.findById(fileId);
-        if (response.isEmpty()) {
-            throw new FileNotFoundException();
-        }
-        File file = response.get();
-        filesRepository.delete(file);
-        kafkaProducerService.sendMessage(new MessageDto(fileId, Instant.now(), Action.DELETE, "delete file with id: " + fileId));
-        return fileMapper.toDto(file);
+  @Transactional
+  @Cacheable(
+      cacheNames = {"deleteFile"},
+      key = "{#fileId}")
+  @Override
+  public FileDto deleteFile(Long fileId) throws FileNotFoundException, JsonProcessingException {
+    log.info("Функция по удалению файла вызвана в сервисе");
+    Optional<File> response = filesRepository.findById(fileId);
+    if (response.isEmpty()) {
+      throw new FileNotFoundException();
     }
+    File file = response.get();
+    filesRepository.delete(file);
+    outboxRepository.save(
+        Outbox.builder()
+            .data(
+                objectMapper.writeValueAsString(
+                    new MessageDto(
+                        fileId, Instant.now(), Action.DELETE, "delete file with id: " + fileId)))
+            .build());
+    return fileMapper.toDto(file);
+  }
 
-    @Transactional
-    @Cacheable(
-            cacheNames = {"patchFile"},
-            key = "{#fileId}")
-    @Override
-    public FileDto patchFile(Long fileId, File newFile) throws FileNotFoundException, JsonProcessingException {
-        log.info("Функция по изменению файла вызвана в сервисе");
-        Optional<File> response = filesRepository.findById(fileId);
-        if (response.isEmpty()) {
-            throw new FileNotFoundException();
-        }
-        File file = response.get();
-        file.setName(newFile.getName());
-        filesRepository.save(file);
-        kafkaProducerService.sendMessage(new MessageDto(fileId, Instant.now(), Action.UPDATE, "patch file with id: " + fileId));
-        return fileMapper.toDto(file);
+  @Transactional
+  @Cacheable(
+      cacheNames = {"patchFile"},
+      key = "{#fileId}")
+  @Override
+  public FileDto patchFile(Long fileId, File newFile)
+      throws FileNotFoundException, JsonProcessingException {
+    log.info("Функция по изменению файла вызвана в сервисе");
+    Optional<File> response = filesRepository.findById(fileId);
+    if (response.isEmpty()) {
+      throw new FileNotFoundException();
     }
+    File file = response.get();
+    file.setName(newFile.getName());
+    filesRepository.save(file);
+    outboxRepository.save(
+        Outbox.builder()
+            .data(
+                objectMapper.writeValueAsString(
+                    new MessageDto(
+                        fileId, Instant.now(), Action.UPDATE, "patch file with id: " + fileId)))
+            .build());
+    return fileMapper.toDto(file);
+  }
 }
