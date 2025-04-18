@@ -36,6 +36,17 @@ management:
         include: "*"
         exclude: shutdown
       base-path: /admin/actuator
+  metrics:
+    export:
+      distribution:
+        percentiles-histogram:
+          all: true
+    tags:
+      service: "user-service"
+  prometheus:
+    metrics:
+      export:
+        enabled: true
 server:
   port: 8080
   tomcat:
