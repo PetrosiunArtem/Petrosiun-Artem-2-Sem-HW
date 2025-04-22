@@ -11,6 +11,6 @@ import java.util.List;
 @Repository
 @Transactional(readOnly = true)
 public interface FilesRepository extends JpaRepository<File, Long> {
-    @Query("SELECT id FROM File")
-    List<Long> findAllId();
+  @Query("SELECT id FROM File")
+  List<Long> findAllId();
 }

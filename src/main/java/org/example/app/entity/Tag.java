@@ -18,25 +18,24 @@ import java.util.Set;
 @Entity
 @Table(name = "tag")
 @Getter
+@Setter
 @Schema(name = "Tag", description = "Сущность Тега")
 public class Tag {
-    @Schema(description = "Название тега", example = "secret", type = "String")
-    @Column(name = "name", nullable = false, length = 50)
-    @Setter
-    @NotNull(message = "Tag name have to be filled")
-    private String name;
+  @Id
+  @GeneratedValue(strategy = GenerationType.IDENTITY)
+  private Long id;
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+  @Schema(description = "Название тега", example = "secret", type = "String")
+  @Column(name = "name", nullable = false, length = 50)
+  @NotNull(message = "Tag name have to be filled")
+  private String name;
 
-    @ManyToMany(mappedBy = "tags")
-    private final Set<File> files = new HashSet<>();
+  @ManyToMany(mappedBy = "tags")
+  private final Set<File> files = new HashSet<>();
 
-    protected Tag() {
-    }
+  protected Tag() {}
 
-    public Tag(String name) {
-        this.name = name;
-    }
+  public Tag(String name) {
+    this.name = name;
+  }
 }

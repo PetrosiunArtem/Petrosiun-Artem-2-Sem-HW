@@ -12,8 +12,6 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
-import java.net.MalformedURLException;
-
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @ContextConfiguration(classes = {AppApplication.class, SecurityConfig.class})
@@ -22,16 +20,14 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 @ActiveProfiles("test")
 class LoggingAspectTest extends DatabaseConfig {
 
-    @Autowired
-    private FilesControllerImpl filesController;
+  @Autowired private FilesControllerImpl filesController;
 
-    @Autowired
-    private LoggingAspect loggingAspect;
+  @Autowired private LoggingAspect loggingAspect;
 
-    @Test
-    void shouldIncreaseClassFieldByTwo() throws MalformedURLException {
-        int count = loggingAspect.getExecutionCount();
-        filesController.downloadFile(1L, 2L);
-        assertEquals(count + 2, loggingAspect.getExecutionCount());
-    }
+  @Test
+  void shouldIncreaseClassFieldByTwo() {
+    int count = loggingAspect.getExecutionCount();
+    filesController.getAllFiles();
+    assertEquals(count + 2, loggingAspect.getExecutionCount());
+  }
 }

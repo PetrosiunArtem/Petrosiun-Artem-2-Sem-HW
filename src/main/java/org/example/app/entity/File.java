@@ -22,38 +22,36 @@ import static jakarta.persistence.FetchType.LAZY;
 
 @Entity
 @Getter
+@Setter
 @Table(name = "file")
 @Schema(name = "File", description = "Сущность Файла")
 public class File {
 
-    @Column(name = "name", nullable = false, length = 50)
-    @NotNull(message = "File name have to be filled")
-    @Setter
-    @Schema(description = "Имя файла", example = "Red Hat.png", type = "String")
-    private String name;
+  @Id
+  @GeneratedValue(strategy = GenerationType.IDENTITY)
+  private Long id;
 
-    @Column(name = "capacity", nullable = false)
-    @NotNull(message = "File capacity have to be filled")
-    @Schema(description = "Размер файла в байтах", example = "1024", type = "int")
-    private int capacity;
+  @Column(name = "name", nullable = false, length = 50)
+  @NotNull(message = "File name have to be filled")
+  @Schema(description = "Имя файла", example = "Red Hat.png", type = "String")
+  private String name;
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+  @Column(name = "capacity", nullable = false)
+  @NotNull(message = "File capacity have to be filled")
+  @Schema(description = "Размер файла в байтах", example = "1024", type = "int")
+  private int capacity;
 
-    @ManyToMany(fetch = LAZY, cascade = PERSIST)
-    @JoinTable(
-            name = "file_tag",
-            joinColumns = @JoinColumn(name = "file_id"),
-            inverseJoinColumns = @JoinColumn(name = "tag_id")
-    )
-    private final Set<Tag> tags = new HashSet<>();
+  @ManyToMany(fetch = LAZY, cascade = PERSIST)
+  @JoinTable(
+      name = "file_tag",
+      joinColumns = @JoinColumn(name = "file_id"),
+      inverseJoinColumns = @JoinColumn(name = "tag_id"))
+  private final Set<Tag> tags = new HashSet<>();
 
-    protected File() {
-    }
+  protected File() {}
 
-    public File(String name, int capacity) {
-        this.name = name;
-        this.capacity = capacity;
-    }
+  public File(String name, int capacity) {
+    this.name = name;
+    this.capacity = capacity;
+  }
 }

@@ -1,7 +1,9 @@
 package org.example.app.repository;
 
+import lombok.RequiredArgsConstructor;
 import org.example.app.config.DatabaseConfig;
 import org.example.app.entity.Tag;
+import org.example.app.exception.TagNotFoundException;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
@@ -14,31 +16,32 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @DataJpaTest
 @Testcontainers
 @ActiveProfiles("test")
 @Transactional(propagation = Propagation.NOT_SUPPORTED)
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
+@RequiredArgsConstructor
 class TagsRepositoryTest extends DatabaseConfig {
 
-    @Autowired
-    private TagsRepository tagsRepository;
+  @Autowired private TagsRepository tagsRepository;
 
-    @Test
-    void shouldFailToFindById() {
-        Tag tag = new Tag("basketball");
-        tagsRepository.save(tag);
-        Optional<Tag> response = tagsRepository.findById(2000L);
-        assertEquals(true, response.isEmpty());
-    }
+  @Test
+  void shouldFailToFindById() {
+    Tag tag = new Tag("basketball");
+    tagsRepository.save(tag);
+    Optional<Tag> response = tagsRepository.findById(2000L);
+    assertTrue(response.isEmpty());
+  }
 
-    @Test
-    void shouldSuccessfullyFindById() {
-        Tag tag = new Tag("football");
-        tagsRepository.save(tag);
-        Optional<Tag> response = tagsRepository.findById(tag.getId());
-        assertEquals(1, response.get().getId());
-        assertEquals(response.get().getName(), tag.getName());
-    }
+  @Test
+  void shouldSuccessfullyFindById() throws TagNotFoundException {
+    Tag tag = new Tag("football");
+    tagsRepository.save(tag);
+    Tag response = tagsRepository.findById(tag.getId()).orElseThrow(TagNotFoundException::new);
+    assertEquals(1, response.getId());
+    assertEquals(response.getName(), tag.getName());
+  }
 }

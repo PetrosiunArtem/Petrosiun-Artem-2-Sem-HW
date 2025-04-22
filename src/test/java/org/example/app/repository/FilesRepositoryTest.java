@@ -2,6 +2,7 @@ package org.example.app.repository;
 
 import org.example.app.config.DatabaseConfig;
 import org.example.app.entity.File;
+import org.example.app.exception.FileNotFoundException;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
@@ -15,7 +16,7 @@ import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
-
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @DataJpaTest
 @Transactional
@@ -24,43 +25,42 @@ import static org.junit.jupiter.api.Assertions.assertNotEquals;
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
 class FilesRepositoryTest extends DatabaseConfig {
 
-    @Autowired
-    private FilesRepository filesRepository;
+  @Autowired private FilesRepository filesRepository;
 
-    @Test
-    void shouldSuccessfullyFindAllId() {
-        File file_first = new File("test first file", 1024);
-        File file_second = new File("test second file", 2 * 1024);
-        filesRepository.save(file_first);
-        filesRepository.save(file_second);
-        List<Long> ids = filesRepository.findAllId();
-        assertEquals(ids, List.of(file_first.getId(), file_second.getId()));
-    }
+  @Test
+  void shouldSuccessfullyFindAllId() {
+    File firstFile = new File("test first file", 1024);
+    File secondFile = new File("test second file", 2 * 1024);
+    filesRepository.save(firstFile);
+    filesRepository.save(secondFile);
+    List<Long> ids = filesRepository.findAllId();
+    assertEquals(ids, List.of(firstFile.getId(), secondFile.getId()));
+  }
 
-    @Test
-    void shouldFailToFindAllId() {
-        File file_first = new File("test first file", 1024);
-        File file_second = new File("test second file", 2 * 1024);
-        filesRepository.save(file_first);
-        filesRepository.save(file_second);
-        List<Long> ids = filesRepository.findAllId();
-        assertNotEquals(ids, List.of(file_second.getId(), file_first.getId()));
-    }
+  @Test
+  void shouldFailToFindAllId() {
+    File firstFile = new File("test first file", 1024);
+    File secondFile = new File("test second file", 2 * 1024);
+    filesRepository.save(firstFile);
+    filesRepository.save(secondFile);
+    List<Long> ids = filesRepository.findAllId();
+    assertNotEquals(ids, List.of(secondFile.getId(), firstFile.getId()));
+  }
 
-    @Test
-    void shouldFailToFindById() {
-        File file = new File("test file", 1024);
-        filesRepository.save(file);
-        Optional<File> response = filesRepository.findById(2000L);
-        assertEquals(response.isEmpty(), true);
-    }
+  @Test
+  void shouldFailToFindById() {
+    File file = new File("test file", 1024);
+    filesRepository.save(file);
+    Optional<File> response = filesRepository.findById(2000L);
+    assertTrue(response.isEmpty());
+  }
 
-    @Test
-    void shouldSuccessfullyFindById() {
-        File file = new File("test file", 1024);
-        filesRepository.save(file);
-        Optional<File> response = filesRepository.findById(file.getId());
-        assertEquals(response.get().getId(), file.getId());
-        assertEquals(response.get().getName(), file.getName());
-    }
+  @Test
+  void shouldSuccessfullyFindById() throws FileNotFoundException {
+    File file = new File("test file", 1024);
+    filesRepository.save(file);
+    File response = filesRepository.findById(file.getId()).orElseThrow(FileNotFoundException::new);
+    assertEquals(response.getId(), file.getId());
+    assertEquals(response.getName(), file.getName());
+  }
 }

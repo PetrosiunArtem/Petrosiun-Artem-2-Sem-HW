@@ -9,19 +9,20 @@ import org.testcontainers.lifecycle.Startables;
 
 @ContextConfiguration(initializers = DatabaseConfig.Initializer.class)
 public class DatabaseConfig {
-    private static final PostgreSQLContainer<?> POSTGRES = new PostgreSQLContainer<>("postgres:13");
+  private static final PostgreSQLContainer<?> POSTGRES = new PostgreSQLContainer<>("postgres:13");
 
-    static class Initializer implements ApplicationContextInitializer<ConfigurableApplicationContext> {
+  static class Initializer
+      implements ApplicationContextInitializer<ConfigurableApplicationContext> {
 
-        @Override
-        public void initialize(ConfigurableApplicationContext context) {
-            Startables.deepStart(POSTGRES).join();
+    @Override
+    public void initialize(ConfigurableApplicationContext context) {
+      Startables.deepStart(POSTGRES).join();
 
-            TestPropertyValues.of(
-                    "spring.datasource.url=" + POSTGRES.getJdbcUrl(),
-                    "spring.datasource.username=" + POSTGRES.getUsername(),
-                    "spring.datasource.password=" + POSTGRES.getPassword()
-            ).applyTo(context);
-        }
+      TestPropertyValues.of(
+              "spring.datasource.url=" + POSTGRES.getJdbcUrl(),
+              "spring.datasource.username=" + POSTGRES.getUsername(),
+              "spring.datasource.password=" + POSTGRES.getPassword())
+          .applyTo(context);
     }
+  }
 }
