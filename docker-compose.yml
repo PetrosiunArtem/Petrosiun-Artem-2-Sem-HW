@@ -40,3 +40,5 @@ services:
     environment:
       - GF_SECURITY_ADMIN_USER=admin
       - GF_SECURITY_ADMIN_PASSWORD=admin
+    volumes:
+      - ./monitoring/grafana/datasource/datasource.yml:/etc/grafana/datasource/datasource.yml
