@@ -16,6 +16,7 @@ import org.example.app.entity.File;
 import org.example.app.exception.FileMemoryOverflowException;
 import org.example.app.exception.FileNotFoundException;
 import org.example.app.mapper.FileMapper;
+import org.example.app.metric.MyMetrics;
 import org.example.app.security.SecurityConfig;
 import org.example.app.service.FilesServiceImpl;
 import org.junit.jupiter.api.Test;
@@ -46,14 +47,7 @@ class FileControllerMvcTest extends DatabaseConfig {
 
   @MockitoBean private FileMapper fileMapper;
 
-  @MockitoBean private Counter filesRequest;
-
-  @MockitoBean private MeterRegistry registry;
-
-  @MockitoBean private DistributionSummary heatmapDistribution;
-
-  @MockitoBean private DistributionSummary histogramDistribution;
-
+  @MockitoBean private MyMetrics metrics;
   private static final String FILE_JSON =
       "{ \"id\":1,\"name\": \"Test file.txt\",\"capacity\": 1024}";
   private static final String BIG_FILE_JSON =

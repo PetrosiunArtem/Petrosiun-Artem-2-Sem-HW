@@ -6,13 +6,14 @@ import java.util.List;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
-import io.micrometer.core.instrument.DistributionSummary;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.example.app.dto.FileDto;
 import org.example.app.entity.File;
 import org.example.app.exception.FileMemoryOverflowException;
 import org.example.app.exception.FileNotFoundException;
 import org.example.app.mapper.FileMapper;
+import org.example.app.metric.MyMetrics;
 import org.example.app.service.FilesServiceImpl;
 import org.springframework.http.ResponseEntity;
 import io.github.resilience4j.ratelimiter.annotation.RateLimiter;
@@ -24,74 +25,39 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.annotation.PutMapping;
-import io.micrometer.core.annotation.Timed;
-import io.micrometer.core.instrument.Counter;
-import io.micrometer.core.instrument.MeterRegistry;
 
 @RestController
 @Slf4j
 @RateLimiter(name = "rateLimiterAPI")
 @CircuitBreaker(name = "CircuitBreakerAPI")
-@Timed(
-    value = "request.duration",
-    description = "HTTP requests duration",
-    percentiles = {0.50, 0.75, 0.95, 0.99},
-    histogram = true)
+@RequiredArgsConstructor
 public class FilesControllerImpl implements FilesController {
   private final FilesServiceImpl filesService;
   private final FileMapper fileMapper;
-  private final Counter filesRequest;
-  private final MeterRegistry registry;
-  private final DistributionSummary heatmapDistribution;
-  private final DistributionSummary histogramDistribution;
-
-  public FilesControllerImpl(
-      FilesServiceImpl filesService, FileMapper fileMapper, MeterRegistry registry) {
-    this.filesService = filesService;
-    this.fileMapper = fileMapper;
-    this.filesRequest = Counter.builder("files.requests").tags("type", "total").register(registry);
-    this.registry = registry;
-    this.heatmapDistribution =
-        DistributionSummary.builder("files.heatmap")
-            .baseUnit("milliseconds")
-            .serviceLevelObjectives(10, 50, 100, 200, 300, 400, 500, 1000, 10000)
-            .register(registry);
-    this.histogramDistribution =
-        DistributionSummary.builder("files.histogram")
-            .publishPercentiles(0.5, 0.75, 0.95, 0.99)
-            .register(registry);
-  }
-
-  private Counter getFilesRequestCounter(String type) {
-    return Counter.builder("files.requests")
-        .description("Number of files requests by type")
-        .tags("type", type)
-        .register(registry);
-  }
+  private final MyMetrics metrics;
 
   @Override
   @GetMapping("/files/info/download/{fileId}/{userId}")
   public ResponseEntity<String> downloadFile(@PathVariable Long fileId, @PathVariable Long userId)
       throws MalformedURLException, JsonProcessingException {
-    getFilesRequestCounter("download").increment();
-    histogramDistribution.record(System.currentTimeMillis());
-    heatmapDistribution.record(System.currentTimeMillis());
+    long start = System.currentTimeMillis();
     URL currentURL =
         new URL(
             "https://localhost:8080/second-memory/files/info/download/" + fileId + "/" + userId);
-    return ResponseEntity.ok()
-        .header("fileId", String.valueOf(fileId))
-        .body(filesService.downloadFile(currentURL, fileId, userId));
+    String response = filesService.downloadFile(currentURL, fileId, userId);
+    long end = System.currentTimeMillis();
+    metrics.updateMetrics(end - start, "download");
+    return ResponseEntity.ok().header("fileId", String.valueOf(fileId)).body(response);
   }
 
   @Override
   @PostMapping("/files/upload")
   public ResponseEntity<FileDto> postUploadPage(@RequestBody File file)
       throws FileMemoryOverflowException, JsonProcessingException {
-    getFilesRequestCounter("upload").increment();
-    histogramDistribution.record(System.currentTimeMillis());
-    heatmapDistribution.record(System.currentTimeMillis());
+    long start = System.currentTimeMillis();
     FileDto fileDto = filesService.uploadFile(file);
+    long end = System.currentTimeMillis();
+    metrics.updateMetrics(end - start, "upload");
     log.info("File uploaded successfully");
     return ResponseEntity.status(201).header("fileId", String.valueOf(file.getId())).body(fileDto);
   }
@@ -114,7 +80,10 @@ public class FilesControllerImpl implements FilesController {
   @DeleteMapping("/files/delete/{fileId}")
   public ResponseEntity<FileDto> deleteFile(@PathVariable Long fileId)
       throws FileNotFoundException, JsonProcessingException {
+    long start = System.currentTimeMillis();
     FileDto fIleDto = filesService.deleteFile(fileId);
+    long end = System.currentTimeMillis();
+    metrics.updateMetrics(end - start, "delete");
     return ResponseEntity.ok().header("fileId", String.valueOf(fileId)).body(fIleDto);
   }
 
@@ -122,10 +91,10 @@ public class FilesControllerImpl implements FilesController {
   @PutMapping("/files/put/{fileId}")
   public ResponseEntity<FileDto> putFile(@PathVariable Long fileId, @RequestBody File newFile)
       throws FileNotFoundException, JsonProcessingException {
-    getFilesRequestCounter("update").increment();
-    histogramDistribution.record(System.currentTimeMillis());
-    heatmapDistribution.record(System.currentTimeMillis());
+    long start = System.currentTimeMillis();
     filesService.putFile(fileId, newFile);
+    long end = System.currentTimeMillis();
+    metrics.updateMetrics(end - start, "put");
     return ResponseEntity.ok()
         .header("fileId", String.valueOf(fileId))
         .body(fileMapper.toDto(newFile));
@@ -135,10 +104,10 @@ public class FilesControllerImpl implements FilesController {
   @PatchMapping("/files/patch/{fileId}")
   public ResponseEntity<FileDto> patchFile(@PathVariable Long fileId, @RequestBody File newFile)
       throws FileNotFoundException, JsonProcessingException {
-    getFilesRequestCounter("update").increment();
-    histogramDistribution.record(System.currentTimeMillis());
-    heatmapDistribution.record(System.currentTimeMillis());
+    long start = System.currentTimeMillis();
     FileDto fileDto = filesService.patchFile(fileId, newFile);
+    long end = System.currentTimeMillis();
+    metrics.updateMetrics(end - start, "patch");
     return ResponseEntity.ok().header("fileId", String.valueOf(fileId)).body(fileDto);
   }
 }
