@@ -13,6 +13,7 @@ import org.example.app.entity.File;
 import org.example.app.exception.FileMemoryOverflowException;
 import org.example.app.exception.FileNotFoundException;
 import org.example.app.mapper.FileMapper;
+import org.example.app.metric.MyMetrics;
 import org.example.app.service.FilesServiceImpl;
 import org.springframework.http.ResponseEntity;
 import io.github.resilience4j.ratelimiter.annotation.RateLimiter;
@@ -31,55 +32,82 @@ import org.springframework.web.bind.annotation.PutMapping;
 @CircuitBreaker(name = "CircuitBreakerAPI")
 @RequiredArgsConstructor
 public class FilesControllerImpl implements FilesController {
-    private final FilesServiceImpl filesService;
-    private final FileMapper fileMapper;
+  private final FilesServiceImpl filesService;
+  private final FileMapper fileMapper;
+  private final MyMetrics metrics;
 
-    @Override
-    @GetMapping("/files/info/download/{fileId}/{userId}")
-    public ResponseEntity<String> downloadFile(@PathVariable Long fileId, @PathVariable Long userId) throws MalformedURLException, JsonProcessingException {
-        URL currentURL = new URL("https://localhost:8080/second-memory/files/info/download/" + fileId + "/" + userId);
-        return ResponseEntity.ok().header("fileId", String.valueOf(fileId)).body(filesService.downloadFile(currentURL, fileId, userId));
-    }
+  @Override
+  @GetMapping("/files/info/download/{fileId}/{userId}")
+  public ResponseEntity<String> downloadFile(@PathVariable Long fileId, @PathVariable Long userId)
+      throws MalformedURLException, JsonProcessingException {
+    long start = System.currentTimeMillis();
+    URL currentURL =
+        new URL(
+            "https://localhost:8080/second-memory/files/info/download/" + fileId + "/" + userId);
+    String response = filesService.downloadFile(currentURL, fileId, userId);
+    long end = System.currentTimeMillis();
+    metrics.updateMetrics(end - start, "download");
+    return ResponseEntity.ok().header("fileId", String.valueOf(fileId)).body(response);
+  }
 
-    @Override
-    @PostMapping("/files/upload")
-    public ResponseEntity<FileDto> postUploadPage(@RequestBody File file) throws FileMemoryOverflowException, JsonProcessingException {
-        FileDto fileDto = filesService.uploadFile(file);
-        log.info("File uploaded successfully");
-        return ResponseEntity.status(201).header("fileId", String.valueOf(file.getId())).body(fileDto);
-    }
+  @Override
+  @PostMapping("/files/upload")
+  public ResponseEntity<FileDto> postUploadPage(@RequestBody File file)
+      throws FileMemoryOverflowException, JsonProcessingException {
+    long start = System.currentTimeMillis();
+    FileDto fileDto = filesService.uploadFile(file);
+    long end = System.currentTimeMillis();
+    metrics.updateMetrics(end - start, "upload");
+    log.info("File uploaded successfully");
+    return ResponseEntity.status(201).header("fileId", String.valueOf(file.getId())).body(fileDto);
+  }
 
-    @Override
-    @GetMapping("/files/get/{fileId}")
-    public ResponseEntity<FileDto> getFile(@PathVariable Long fileId) throws FileNotFoundException, JsonProcessingException {
-        FileDto fIleDto = filesService.getFile(fileId);
-        return ResponseEntity.ok().header("fileId", String.valueOf(fileId)).body(fIleDto);
-    }
+  @Override
+  @GetMapping("/files/get/{fileId}")
+  public ResponseEntity<FileDto> getFile(@PathVariable Long fileId)
+      throws FileNotFoundException, JsonProcessingException {
+    FileDto fIleDto = filesService.getFile(fileId);
+    return ResponseEntity.ok().header("fileId", String.valueOf(fileId)).body(fIleDto);
+  }
 
-    @Override
-    @GetMapping("/files")
-    public ResponseEntity<List<Long>> getAllFiles() throws JsonProcessingException {
-        return ResponseEntity.ok().body(filesService.getAllFiles());
-    }
+  @Override
+  @GetMapping("/files")
+  public ResponseEntity<List<Long>> getAllFiles() throws JsonProcessingException {
+    return ResponseEntity.ok().body(filesService.getAllFiles());
+  }
 
-    @Override
-    @DeleteMapping("/files/delete/{fileId}")
-    public ResponseEntity<FileDto> deleteFile(@PathVariable Long fileId) throws FileNotFoundException, JsonProcessingException {
-        FileDto fIleDto = filesService.deleteFile(fileId);
-        return ResponseEntity.ok().header("fileId", String.valueOf(fileId)).body(fIleDto);
-    }
+  @Override
+  @DeleteMapping("/files/delete/{fileId}")
+  public ResponseEntity<FileDto> deleteFile(@PathVariable Long fileId)
+      throws FileNotFoundException, JsonProcessingException {
+    long start = System.currentTimeMillis();
+    FileDto fIleDto = filesService.deleteFile(fileId);
+    long end = System.currentTimeMillis();
+    metrics.updateMetrics(end - start, "delete");
+    return ResponseEntity.ok().header("fileId", String.valueOf(fileId)).body(fIleDto);
+  }
 
-    @Override
-    @PutMapping("/files/put/{fileId}")
-    public ResponseEntity<FileDto> putFile(@PathVariable Long fileId, @RequestBody File newFile) throws FileNotFoundException, JsonProcessingException {
-        filesService.putFile(fileId, newFile);
-        return ResponseEntity.ok().header("fileId", String.valueOf(fileId)).body(fileMapper.toDto(newFile));
-    }
+  @Override
+  @PutMapping("/files/put/{fileId}")
+  public ResponseEntity<FileDto> putFile(@PathVariable Long fileId, @RequestBody File newFile)
+      throws FileNotFoundException, JsonProcessingException {
+    long start = System.currentTimeMillis();
+    filesService.putFile(fileId, newFile);
+    long end = System.currentTimeMillis();
+    metrics.updateMetrics(end - start, "put");
+    return ResponseEntity.ok()
+        .header("fileId", String.valueOf(fileId))
+        .body(fileMapper.toDto(newFile));
+  }
 
-    @Override
-    @PatchMapping("/files/patch/{fileId}")
-    public ResponseEntity<FileDto> patchFile(@PathVariable Long fileId, @RequestBody File newFile) throws FileNotFoundException, JsonProcessingException {
-        FileDto fileDto = filesService.patchFile(fileId, newFile);
-        return ResponseEntity.ok().header("fileId", String.valueOf(fileId)).body(fileDto);
-    }
+  @Override
+  @PatchMapping("/files/patch/{fileId}")
+  public ResponseEntity<FileDto> patchFile(@PathVariable Long fileId, @RequestBody File newFile)
+      throws FileNotFoundException, JsonProcessingException {
+    long start = System.currentTimeMillis();
+    FileDto fileDto = filesService.patchFile(fileId, newFile);
+    long end = System.currentTimeMillis();
+    metrics.updateMetrics(end - start, "patch");
+    return ResponseEntity.ok().header("fileId", String.valueOf(fileId)).body(fileDto);
+  }
 }
